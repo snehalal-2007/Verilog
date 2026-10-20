@@ -1,0 +1,28 @@
+{# interface.html — the overlays: title, status panel, stargaze banner #}
+
+<div class="hud">
+    <h1>Luna · Stargazing Park</h1>
+    <p id="hint">Click the sun in the corner to bring on the night.</p>
+</div>
+
+
+{# the same six signals stargazing_controller.v produces #}
+<div class="panel">
+    <h2>Park Status</h2>
+
+    <div class="row"><span>Sunset</span>            <span class="val no"  id="v-sunset">NO</span></div>
+    <div class="row"><span>Parking lights</span>    <span class="val off" id="v-parking">OFF</span></div>
+    <div class="row"><span>Trail lights</span>      <span class="val off" id="v-trail">OFF</span></div>
+    <div class="row"><span>Playground lights</span> <span class="val off" id="v-playground">OFF</span></div>
+    <div class="row"><span>Stargazing area</span>   <span class="val off" id="v-stargaze">OFF</span></div>
+    <div class="row"><span>Ready to stargaze</span> <span class="val no"  id="v-ready">NO</span></div>
+
+    <button class="reset" id="reset">RESET TO DAYTIME</button>
+</div>
+
+
+{# shown briefly when the last lamp goes out, then it fades away #}
+<div class="banner">
+    <div class="big">It's time to stargaze</div>
+    <div class="small">Every light is out · Look up</div>
+</div>

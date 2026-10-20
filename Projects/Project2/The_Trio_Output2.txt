@@ -1,0 +1,273 @@
+
+In Breadboard, decimal number is : 0
+In Breadboard, binary number is  : 0000
+In Breadboard, one hot number is : 0000000000000001
+In Breadboard, the segments are  : [1111110]
+In SevenSegment, the segments are: [1111110]
+
+  ######
+##      ##
+##      ##
+##      ##
+        
+##      ##
+##      ##
+##      ##
+  ######
+
+
+In Breadboard, decimal number is : 1
+In Breadboard, binary number is  : 0001
+In Breadboard, one hot number is : 0000000000000010
+In Breadboard, the segments are  : [0110000]
+In SevenSegment, the segments are: [0110000]
+
+        
+        ##
+        ##
+        ##
+        
+        ##
+        ##
+        ##
+        
+
+
+In Breadboard, decimal number is : 2
+In Breadboard, binary number is  : 0010
+In Breadboard, one hot number is : 0000000000000100
+In Breadboard, the segments are  : [1101101]
+In SevenSegment, the segments are: [1101101]
+
+  ######
+        ##
+        ##
+        ##
+  ######
+##        
+##        
+##        
+  ######
+
+
+In Breadboard, decimal number is : 3
+In Breadboard, binary number is  : 0011
+In Breadboard, one hot number is : 0000000000001000
+In Breadboard, the segments are  : [1111001]
+In SevenSegment, the segments are: [1111001]
+
+  ######
+        ##
+        ##
+        ##
+  ######
+        ##
+        ##
+        ##
+  ######
+
+
+In Breadboard, decimal number is : 4
+In Breadboard, binary number is  : 0100
+In Breadboard, one hot number is : 0000000000010000
+In Breadboard, the segments are  : [0110011]
+In SevenSegment, the segments are: [0110011]
+
+        
+##      ##
+##      ##
+##      ##
+  ######
+        ##
+        ##
+        ##
+        
+
+
+In Breadboard, decimal number is : 5
+In Breadboard, binary number is  : 0101
+In Breadboard, one hot number is : 0000000000100000
+In Breadboard, the segments are  : [1011011]
+In SevenSegment, the segments are: [1011011]
+
+  ######
+##        
+##        
+##        
+  ######
+        ##
+        ##
+        ##
+  ######
+
+
+In Breadboard, decimal number is : 6
+In Breadboard, binary number is  : 0110
+In Breadboard, one hot number is : 0000000001000000
+In Breadboard, the segments are  : [1011111]
+In SevenSegment, the segments are: [1011111]
+
+  ######
+##        
+##        
+##        
+  ######
+##      ##
+##      ##
+##      ##
+  ######
+
+
+In Breadboard, decimal number is : 7
+In Breadboard, binary number is  : 0111
+In Breadboard, one hot number is : 0000000010000000
+In Breadboard, the segments are  : [1110000]
+In SevenSegment, the segments are: [1110000]
+
+  ######
+        ##
+        ##
+        ##
+        
+        ##
+        ##
+        ##
+        
+
+
+In Breadboard, decimal number is : 8
+In Breadboard, binary number is  : 1000
+In Breadboard, one hot number is : 0000000100000000
+In Breadboard, the segments are  : [1111111]
+In SevenSegment, the segments are: [1111111]
+
+  ######
+##      ##
+##      ##
+##      ##
+  ######
+##      ##
+##      ##
+##      ##
+  ######
+
+
+In Breadboard, decimal number is : 9
+In Breadboard, binary number is  : 1001
+In Breadboard, one hot number is : 0000001000000000
+In Breadboard, the segments are  : [1111011]
+In SevenSegment, the segments are: [1111011]
+
+  ######
+##      ##
+##      ##
+##      ##
+  ######
+        ##
+        ##
+        ##
+  ######
+
+
+In Breadboard, decimal number is : 10
+In Breadboard, binary number is  : 1010
+In Breadboard, one hot number is : 0000010000000000
+In Breadboard, the segments are  : [1110111]
+In SevenSegment, the segments are: [1110111]
+
+  ######
+##      ##
+##      ##
+##      ##
+  ######
+##      ##
+##      ##
+##      ##
+        
+
+
+In Breadboard, decimal number is : 11
+In Breadboard, binary number is  : 1011
+In Breadboard, one hot number is : 0000100000000000
+In Breadboard, the segments are  : [0011111]
+In SevenSegment, the segments are: [0011111]
+
+        
+##        
+##        
+##        
+  ######
+##      ##
+##      ##
+##      ##
+  ######
+
+
+In Breadboard, decimal number is : 12
+In Breadboard, binary number is  : 1100
+In Breadboard, one hot number is : 0001000000000000
+In Breadboard, the segments are  : [0001101]
+In SevenSegment, the segments are: [0001101]
+
+        
+          
+          
+          
+  ######
+##        
+##        
+##        
+  ######
+
+
+In Breadboard, decimal number is : 13
+In Breadboard, binary number is  : 1101
+In Breadboard, one hot number is : 0010000000000000
+In Breadboard, the segments are  : [0111101]
+In SevenSegment, the segments are: [0111101]
+
+        
+        ##
+        ##
+        ##
+  ######
+##      ##
+##      ##
+##      ##
+  ######
+
+
+In Breadboard, decimal number is : 14
+In Breadboard, binary number is  : 1110
+In Breadboard, one hot number is : 0100000000000000
+In Breadboard, the segments are  : [1001111]
+In SevenSegment, the segments are: [1001111]
+
+  ######
+##        
+##        
+##        
+  ######
+##        
+##        
+##        
+  ######
+
+
+In Breadboard, decimal number is : 15
+In Breadboard, binary number is  : 1111
+In Breadboard, one hot number is : 1000000000000000
+In Breadboard, the segments are  : [1000111]
+In SevenSegment, the segments are: [1000111]
+
+  ######
+##        
+##        
+##        
+  ######
+##        
+##        
+##        
+        
+
+The_Trio_Program2.v:164: $finish called at 910 (1s)

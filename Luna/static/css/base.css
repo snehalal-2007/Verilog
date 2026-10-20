@@ -1,0 +1,35 @@
+/* ==============================================================
+   base.css — page shell
+   The scene is a single full-viewport SVG; everything else is a
+   floating overlay on top of it.
+   ============================================================== */
+
+* { box-sizing: border-box; }
+
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+    background: #02030a;
+    font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+    color: #f3f6ff;
+}
+
+#stage {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+}
+
+#scene {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* Gradient stops and themed fills ease between times of day */
+#scene stop    { transition: stop-color 1.8s ease; }
+#scene .tinted { transition: fill 1.8s ease, opacity 1.8s ease; }

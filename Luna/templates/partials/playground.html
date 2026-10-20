@@ -1,0 +1,84 @@
+{# playground.html — zone 3 of 4 — sandpit, swing set, slide and seesaw.
+
+   The swings and the seesaw are driven by static/js/interact.js. Each
+   moving part is wrapped in its own <g> that carries a pivot, and the
+   script only ever rewrites that group's rotate(). At rest the angles
+   are zero, so the drawing here is what you see before anything moves. #}
+
+<!-- = PLAYGROUND (front left) = -->
+<g id="zone-playground">
+    <ellipse cx="430" cy="600" rx="205" ry="54" fill="#d9c08a" opacity="0.9"/>
+    <ellipse cx="430" cy="600" rx="205" ry="54" fill="none" stroke="#a98a58" stroke-width="3" opacity="0.45"/>
+    <ellipse cx="430" cy="600" rx="150" ry="34" fill="#e2cb9a" opacity="0.5"/>
+
+    <!-- swing set -->
+    <g transform="translate(330, 572) scale(0.95)">
+        <ellipse cx="0" cy="32" rx="62" ry="9" fill="#000" opacity="0.25"/>
+
+        <!-- A-frame -->
+        <line x1="-46" y1="30" x2="-24" y2="-52" stroke="#c0453a" stroke-width="7" stroke-linecap="round"/>
+        <line x1="-2"  y1="30" x2="-24" y2="-52" stroke="#c0453a" stroke-width="7" stroke-linecap="round"/>
+        <line x1="24"  y1="30" x2="46"  y2="-52" stroke="#c0453a" stroke-width="7" stroke-linecap="round"/>
+        <line x1="68"  y1="30" x2="46"  y2="-52" stroke="#c0453a" stroke-width="7" stroke-linecap="round"/>
+
+        <!-- left swing: chains + seat, hanging from (0, -50) -->
+        <g class="swing" data-pivot-x="0" data-pivot-y="-50" data-reach="62">
+            <g stroke="#7b838f" stroke-width="2.5">
+                <line x1="-8" y1="-50" x2="-8" y2="-6"/>
+                <line x1="8"  y1="-50" x2="8"  y2="-6"/>
+            </g>
+            <rect x="-12" y="-6" width="24" height="5" rx="2" fill="#3f4854"/>
+        </g>
+
+        <!-- right swing: hangs from (34, -50) -->
+        <g class="swing" data-pivot-x="34" data-pivot-y="-50" data-reach="62">
+            <g stroke="#7b838f" stroke-width="2.5">
+                <line x1="26" y1="-50" x2="26" y2="-2"/>
+                <line x1="42" y1="-50" x2="42" y2="-2"/>
+            </g>
+            <rect x="22" y="-2" width="24" height="5" rx="2" fill="#3f4854"/>
+        </g>
+
+        <!-- the bar the swings hang from, drawn last so the chains
+             pass behind it rather than over it -->
+        <line x1="-26" y1="-52" x2="48" y2="-52" stroke="#9c342b" stroke-width="8" stroke-linecap="round"/>
+    </g>
+
+    <!-- slide -->
+    <g transform="translate(508, 568) scale(0.95)">
+        <ellipse cx="6" cy="38" rx="58" ry="9" fill="#000" opacity="0.25"/>
+        <path d="M-2 -46 L 52 30 L 40 36 L -14 -40 Z" fill="#3aa0d8"/>
+        <path d="M-6 -44 L 48 32" stroke="#7fd0f2" stroke-width="3" opacity="0.7"/>
+        <rect x="-30" y="-52" width="34" height="9" rx="3" fill="#e0a13c"/>
+
+        <!-- right-hand support, under the top of the chute -->
+        <line x1="0" y1="-44" x2="0" y2="34" stroke="#c8873a" stroke-width="6" stroke-linecap="round"/>
+
+        <!-- The ladder sits directly beneath the platform and its rails
+             run all the way up to it. It used to stand further left and
+             stop short, which left it looking detached. Its left rail
+             now also does the job of the old second support post, and
+             its right rail stops where the chute's top lip begins. -->
+        <g stroke="#e0a13c" stroke-width="4" stroke-linecap="round">
+            <line x1="-31" y1="-44" x2="-31" y2="34"/>
+            <line x1="-13" y1="-44" x2="-13" y2="34"/>
+            <line x1="-31" y1="-30" x2="-13" y2="-30"/>
+            <line x1="-31" y1="-16" x2="-13" y2="-16"/>
+            <line x1="-31" y1="-2"  x2="-13" y2="-2"/>
+            <line x1="-31" y1="14"  x2="-13" y2="14"/>
+        </g>
+    </g>
+
+    <!-- seesaw: the plank tips about the top of its pivot block -->
+    <g transform="translate(592, 620) scale(0.9)">
+        <ellipse cx="0" cy="14" rx="44" ry="7" fill="#000" opacity="0.22"/>
+        <path d="M-10 12 L 0 -8 L 10 12 Z" fill="#6b7280"/>
+
+        <g class="seesaw" data-pivot-x="0" data-pivot-y="-8" data-half="46" data-rest="-9">
+            <rect x="-46" y="-14" width="92" height="7" rx="3.5" fill="#27a06a"/>
+            <!-- grips, so which end is down reads clearly -->
+            <rect x="-42" y="-20" width="5" height="8" rx="2" fill="#1f7f55"/>
+            <rect x="37"  y="-20" width="5" height="8" rx="2" fill="#1f7f55"/>
+        </g>
+    </g>
+</g>

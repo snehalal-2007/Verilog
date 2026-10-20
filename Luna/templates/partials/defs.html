@@ -1,0 +1,123 @@
+{# defs.html — gradients, filters and other reusable paint. Referenced by
+     id from every other partial. #}
+
+<defs>
+
+    <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%"   style="stop-color: var(--sky-top)"/>
+        <stop offset="55%"  style="stop-color: var(--sky-mid)"/>
+        <stop offset="100%" style="stop-color: var(--sky-bot)"/>
+    </linearGradient>
+
+    <linearGradient id="hazeGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%"   style="stop-color: var(--haze)" stop-opacity="0"/>
+        <stop offset="100%" style="stop-color: var(--haze)" stop-opacity="1"/>
+    </linearGradient>
+
+    <linearGradient id="grassGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%"   style="stop-color: var(--grass-top)"/>
+        <stop offset="100%" style="stop-color: var(--grass-bot)"/>
+    </linearGradient>
+
+    <radialGradient id="sunGrad" cx="40%" cy="35%">
+        <stop offset="0%"   stop-color="#fffdf0"/>
+        <stop offset="55%"  stop-color="#ffd85e"/>
+        <stop offset="100%" stop-color="#ff9b2f"/>
+    </radialGradient>
+
+    <radialGradient id="sunHalo">
+        <stop offset="0%"   stop-color="#ffd67a" stop-opacity="0.75"/>
+        <stop offset="60%"  stop-color="#ffb347" stop-opacity="0.18"/>
+        <stop offset="100%" stop-color="#ffb347" stop-opacity="0"/>
+    </radialGradient>
+
+    <radialGradient id="moonGrad" cx="36%" cy="32%">
+        <stop offset="0%"   stop-color="#ffffff"/>
+        <stop offset="60%"  stop-color="#dfe6f5"/>
+        <stop offset="100%" stop-color="#9fadc8"/>
+    </radialGradient>
+
+    <radialGradient id="moonHalo">
+        <stop offset="0%"   stop-color="#cfe0ff" stop-opacity="0.45"/>
+        <stop offset="55%"  stop-color="#9ab4ff" stop-opacity="0.12"/>
+        <stop offset="100%" stop-color="#9ab4ff" stop-opacity="0"/>
+    </radialGradient>
+
+    <radialGradient id="lampHalo">
+        <stop offset="0%"   stop-color="#fff6d5" stop-opacity="1"/>
+        <stop offset="45%"  stop-color="#ffd977" stop-opacity="0.45"/>
+        <stop offset="100%" stop-color="#ffc247" stop-opacity="0"/>
+    </radialGradient>
+
+    <linearGradient id="beamGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%"   stop-color="#fff0c0" stop-opacity="0.85"/>
+        <stop offset="100%" stop-color="#ffd570" stop-opacity="0"/>
+    </linearGradient>
+
+    <radialGradient id="poolGrad">
+        <stop offset="0%"   stop-color="#ffe8a8" stop-opacity="0.85"/>
+        <stop offset="100%" stop-color="#ffd166" stop-opacity="0"/>
+    </radialGradient>
+
+    <linearGradient id="poleGrad" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%"   stop-color="#2a3140"/>
+        <stop offset="35%"  stop-color="#6c7789"/>
+        <stop offset="65%"  stop-color="#3b4454"/>
+        <stop offset="100%" stop-color="#20262f"/>
+    </linearGradient>
+
+    <linearGradient id="asphalt" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%"   stop-color="#4a4f59"/>
+        <stop offset="100%" stop-color="#2d323b"/>
+    </linearGradient>
+
+    <linearGradient id="pathGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%"   stop-color="#c8ae86"/>
+        <stop offset="100%" stop-color="#9c8563"/>
+    </linearGradient>
+
+    <linearGradient id="deckGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%"   stop-color="#9a6f43"/>
+        <stop offset="100%" stop-color="#6b4a2b"/>
+    </linearGradient>
+
+    <radialGradient id="nebulaA">
+        <stop offset="0%"   stop-color="#8b5cf6" stop-opacity="0.80"/>
+        <stop offset="100%" stop-color="#8b5cf6" stop-opacity="0"/>
+    </radialGradient>
+
+    <radialGradient id="nebulaB">
+        <stop offset="0%"   stop-color="#ec4899" stop-opacity="0.66"/>
+        <stop offset="100%" stop-color="#ec4899" stop-opacity="0"/>
+    </radialGradient>
+
+    <radialGradient id="nebulaC">
+        <stop offset="0%"   stop-color="#38bdf8" stop-opacity="0.60"/>
+        <stop offset="100%" stop-color="#38bdf8" stop-opacity="0"/>
+    </radialGradient>
+
+    <radialGradient id="milky">
+        <stop offset="0%"   stop-color="#dbe4ff" stop-opacity="0.52"/>
+        <stop offset="55%"  stop-color="#9aa8e8" stop-opacity="0.24"/>
+        <stop offset="100%" stop-color="#9aa8e8" stop-opacity="0"/>
+    </radialGradient>
+
+    <linearGradient id="tintGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%"   stop-color="#050a1e" stop-opacity="0"/>
+        <stop offset="28%"  stop-color="#050a1e" stop-opacity="0.85"/>
+        <stop offset="100%" stop-color="#040812" stop-opacity="1"/>
+    </linearGradient>
+
+    <filter id="soft" x="-60%" y="-60%" width="220%" height="220%">
+        <feGaussianBlur stdDeviation="16"/>
+    </filter>
+
+    <filter id="softer" x="-80%" y="-80%" width="260%" height="260%">
+        <feGaussianBlur stdDeviation="34"/>
+    </filter>
+
+    <filter id="glow" x="-90%" y="-90%" width="280%" height="280%">
+        <feGaussianBlur stdDeviation="5"/>
+    </filter>
+
+</defs>

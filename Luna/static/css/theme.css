@@ -1,0 +1,74 @@
+/* ==============================================================
+   theme.css — the three times of day
+   --------------------------------------------------------------
+   Every colour and opacity in the scene is a custom property.
+   Switching the <body> class (day -> night -> stargaze) repaints
+   the whole painting at once, and the transitions declared
+   alongside each layer do the fading.
+   ============================================================== */
+
+body.day {
+    --sky-top:    #1f6fc4;
+    --sky-mid:    #6fb7ef;
+    --sky-bot:    #cfe9ff;
+    --haze:       #ffe6b0;
+    --haze-op:    0.55;
+
+    --hill-far:   #7fa9c9;
+    --hill-mid:   #4f7f5a;
+    --grass-top:  #5fae53;
+    --grass-bot:  #2e6b35;
+
+    --star-op:    0;
+    --galaxy-op:  0;
+    --night-tint: 0;
+
+    --sun-op:     1;
+    --moon-op:    0;
+    --cloud-op:   0.92;
+}
+
+body.night {
+    --sky-top:    #060a1c;
+    --sky-mid:    #14224a;
+    --sky-bot:    #2b3f6e;
+    --haze:       #47548c;
+    --haze-op:    0.35;
+
+    --hill-far:   #2a3559;
+    --hill-mid:   #1c3330;
+    --grass-top:  #1e3c2b;
+    --grass-bot:  #10221a;
+
+    --star-op:    1;
+    --galaxy-op:  0;
+    --night-tint: 0.56;
+
+    --sun-op:     0;
+    --moon-op:    1;
+    --cloud-op:   0.10;
+}
+
+body.stargaze {
+    --sky-top:    #02030a;
+    --sky-mid:    #070b1d;
+    --sky-bot:    #0d1228;
+    --haze:       #161d3a;
+    --haze-op:    0.30;
+
+    --hill-far:   #141b34;
+    --hill-mid:   #101d1c;
+    --grass-top:  #12241b;
+    --grass-bot:  #070f0b;
+
+    --star-op:    1;
+    --galaxy-op:  1;
+    --night-tint: 0.80;
+
+    --lamp-dim:   0.35;    /* posts sink into the dark so the sky takes over */
+    --tag-op:     0.25;    /* labels fade too, still readable up close */
+
+    --sun-op:     0;
+    --moon-op:    1;
+    --cloud-op:   0;
+}
