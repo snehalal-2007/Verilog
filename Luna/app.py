@@ -10,6 +10,7 @@ time to stargaze lives in stargazing_controller.v and nowhere else.
 from flask import Flask, render_template, request, jsonify
 from pathlib import Path
 import subprocess
+import os
 import re
 
 app = Flask(__name__)
@@ -110,5 +111,6 @@ def simulate():
 
 
 if __name__ == "__main__":
-    # Port 5000 is taken by macOS Control Center (AirPlay Receiver).
-    app.run(debug=True, port=5050)
+    # Port 5000 is taken by macOS Control Center (AirPlay Receiver), so
+    # the default is 5050. Override with PORT=xxxx if that one is busy too.
+    app.run(debug=True, port=int(os.environ.get("PORT", 5050)))

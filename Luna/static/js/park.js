@@ -16,13 +16,14 @@
 
 import { ZONES } from "./config.js";
 import { paintLamp } from "./lamps.js";
+import { paintMinimapLamp } from "./engine.js";
 import { updatePanel, updateHint } from "./panel.js";
 import { announce, dismiss } from "./banner.js";
 import { askHardware } from "./verdict.js";
 
 const state = {
     night: false,
-    lamps: { parking: false, trail: false, playground: false, stargaze: false }
+    lamps: { fountain: false, trail: false, playground: false, stargaze: false }
 };
 
 /* The hardware's last word. null means "we have not been told yet". */
@@ -76,10 +77,15 @@ function paint() {
 
     const ready = verdict === true;
 
-    document.body.className =
-        ready ? "night stargaze" : (state.night ? "night" : "day");
+    // toggle rather than assign: view.js keeps its own "intro" flag on <body>
+    document.body.classList.toggle("day",      !state.night);
+    document.body.classList.toggle("night",    state.night);
+    document.body.classList.toggle("stargaze", ready);
 
-    ZONES.forEach(zone => paintLamp(zone.id, state.lamps[zone.id]));
+    ZONES.forEach(zone => {
+        paintLamp(zone.id, state.lamps[zone.id]);
+        paintMinimapLamp(zone.id, state.lamps[zone.id]);
+    });
 
     updatePanel(state, verdict);
     updateHint(state, verdict, trouble);

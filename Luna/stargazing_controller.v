@@ -16,7 +16,7 @@
 // Breadboard
 
 module Breadboard	(sunset,a,b,c,d,ready);    //Module Header/Module Begin
-input sunset,a,b,c,d;                          //Inputs: sunset + the four lamps (1 = lit, 0 = dark)
+input sunset,a,b,c,d;                          //Inputs: sunset + the four lamps: fountain, trail, playground, stargazing (1 = lit, 0 = dark)
 output ready;                                  //Output: 1 = time to stargaze
 wire sunset,a,b,c,d;                           //Input
 reg ready;                                     //Output
@@ -46,7 +46,7 @@ module testbench();
 	//Registers act like local variables
 	reg [5:0] i;    //A loop control for 32 rows of a truth table.
 	reg  s;         //sunset      Value of 2^4
-	reg  a;         //parking     Value of 2^3
+	reg  a;         //fountain    Value of 2^3
 	reg  b;         //trail       Value of 2^2
 	reg  c;         //playground  Value of 2^1
 	reg  d;         //stargazing  Value of 2^0

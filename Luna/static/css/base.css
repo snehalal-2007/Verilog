@@ -2,6 +2,11 @@
    base.css — page shell
    The scene is a single full-viewport SVG; everything else is a
    floating overlay on top of it.
+
+   Type: Manrope for the interface, Cormorant Garamond for the
+   title and banner, Barlow Condensed for the lamp labels (see
+   scene.css). All three load from Google Fonts in index.html and
+   fall back to system faces if offline.
    ============================================================== */
 
 * { box-sizing: border-box; }
@@ -12,8 +17,9 @@ html, body {
     height: 100%;
     overflow: hidden;
     background: #02030a;
-    font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+    font-family: "Manrope", "Avenir Next", "Segoe UI", system-ui, sans-serif;
     color: #f3f6ff;
+    -webkit-font-smoothing: antialiased;
 }
 
 #stage {

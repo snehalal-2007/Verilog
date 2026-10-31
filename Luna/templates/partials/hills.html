@@ -1,0 +1,20 @@
+{# hills.html — one 1800-unit tile of distant hills, drawn twice by
+   index.html. Both ends of every path sit at the same height, so the
+   tile repeats without a step. Scrolls at half speed. #}
+
+<path class="tinted" style="fill: var(--hill-far)" opacity="0.75"
+      d="M0 380 Q 150 330 300 368 Q 450 400 600 350 Q 750 310 900 360 Q 1050 405 1200 360 Q 1350 318 1500 366 Q 1650 400 1800 380 L1800 470 L0 470 Z"/>
+
+<path class="tinted" style="fill: var(--hill-mid)" filter="url(#tex-grass)"
+      d="M0 410 Q 150 372 300 402 Q 450 432 600 396 Q 750 362 900 400 Q 1050 440 1200 398 Q 1350 366 1500 404 Q 1650 430 1800 410 L1800 470 L0 470 Z"/>
+
+{# a ragged line of woodland along the ridge: a bump every 24 units,
+   three heights cycling so it never looks like a comb #}
+<path class="tinted" style="fill: var(--treeline)" opacity="0.9"
+      d="M0 440 L0 416
+         {%- for x in range(0, 1800, 24) -%}
+            {%- set h = [14, 22, 18, 26, 16][loop.index0 % 5] -%}
+            {%- set base = 428 - (8 * ((x / 300) | round | int) % 3) -%}
+            Q {{ x + 12 }} {{ base - h }} {{ x + 24 }} {{ base }}
+         {%- endfor %}
+         L1800 416 L1800 470 L0 470 Z"/>

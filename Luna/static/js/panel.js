@@ -34,6 +34,16 @@ export function updatePanel(state, verdict) {
     }
 }
 
+let override = null;
+
+/** engine.js uses this while you are still outside the gate. */
+export function setHintOverride(text) {
+    override = text;
+    document.getElementById("hint").textContent = text || lastHint;
+}
+
+let lastHint = "";
+
 export function updateHint(state, verdict, trouble) {
 
     let hint;
@@ -41,12 +51,13 @@ export function updateHint(state, verdict, trouble) {
     if (trouble) {
         hint = "The simulation could not be reached (" + trouble + ").";
     } else if (!state.night) {
-        hint = "Click the sun in the corner to bring on the night.";
+        hint = "Wander the park with the arrow keys, then click the sun to bring on the night.";
     } else if (verdict === true) {
         hint = "The park is dark. Click the moon to bring the day back.";
     } else {
-        hint = "Now click each lamp post to switch its lights off.";
+        hint = "Walk to each lamp post and click it to switch its lights off.";
     }
 
-    document.getElementById("hint").textContent = hint;
+    lastHint = hint;
+    if (!override) document.getElementById("hint").textContent = hint;
 }

@@ -4,6 +4,9 @@
 <!-- ===== SKY ===== -->
 <rect x="0" y="0" width="1200" height="700" fill="url(#skyGrad)"/>
 
+<!-- the sky warms up near the sun during the day -->
+<ellipse id="sunWash" cx="1010" cy="150" rx="520" ry="300" fill="url(#sunWash)"/>
+
 
 <!-- ===== GALAXY (only visible once every lamp is out) ===== -->
 <g id="galaxy">
@@ -41,34 +44,42 @@
 
     <circle class="hit" r="130" fill="transparent"/>
 
+    <!-- The sun is a bright disc inside layers of soft glare, no
+         cartoon rays. The glare is what makes it read as bright. -->
     <g id="sunGroup">
-        <circle r="120" fill="url(#sunHalo)"/>
-        <g id="sunRays" stroke="#ffd45e" stroke-width="5" stroke-linecap="round" opacity="0.95">
-            <line x1="0"   y1="-62"  x2="0"   y2="-88"/>
-            <line x1="31"  y1="-54"  x2="44"  y2="-76"/>
-            <line x1="54"  y1="-31"  x2="76"  y2="-44"/>
-            <line x1="62"  y1="0"    x2="88"  y2="0"/>
-            <line x1="54"  y1="31"   x2="76"  y2="44"/>
-            <line x1="31"  y1="54"   x2="44"  y2="76"/>
-            <line x1="0"   y1="62"   x2="0"   y2="88"/>
-            <line x1="-31" y1="54"   x2="-44" y2="76"/>
-            <line x1="-54" y1="31"   x2="-76" y2="44"/>
-            <line x1="-62" y1="0"    x2="-88" y2="0"/>
-            <line x1="-54" y1="-31"  x2="-76" y2="-44"/>
-            <line x1="-31" y1="-54"  x2="-44" y2="-76"/>
-        </g>
-        <circle id="sunCore" r="46" fill="url(#sunGrad)"/>
+        <circle r="170" fill="url(#sunHalo)" opacity="0.7"/>
+        <circle r="96"  fill="url(#sunHalo)"/>
+        <circle r="52"  fill="#fff3cf" opacity="0.55" filter="url(#glow)"/>
+        <circle id="sunCore" r="44" fill="url(#sunGrad)"/>
     </g>
 
+    <!-- A waxing gibbous moon: lit disc, dark maria, a few cratered
+         rims, and a soft shadow eating into its left edge. -->
     <g id="moonGroup">
-        <circle r="110" fill="url(#moonHalo)"/>
+        <circle r="125" fill="url(#moonHalo)"/>
         <circle r="42" fill="url(#moonGrad)"/>
-        <g fill="#b9c4d8" opacity="0.55">
-            <circle cx="-13" cy="-11" r="9"/>
-            <circle cx="12"  cy="6"   r="6.5"/>
-            <circle cx="-4"  cy="19"  r="4.5"/>
-            <circle cx="20"  cy="-16" r="3.5"/>
-            <circle cx="-22" cy="12"  r="3"/>
+
+        <g clip-path="url(#moonClip)">
+            <!-- maria -->
+            <g fill="#8e9ab6" opacity="0.5" filter="url(#soft-xs)">
+                <ellipse cx="-12" cy="-9"  rx="14" ry="10"/>
+                <ellipse cx="9"   cy="9"   rx="11" ry="8"/>
+                <ellipse cx="-5"  cy="20"  rx="7"  ry="4.5"/>
+                <ellipse cx="18"  cy="-14" rx="6"  ry="5"/>
+            </g>
+            <!-- craters: lit rim on the upper left, shadow inside -->
+            <g>
+                <circle cx="20"  cy="-19" r="4.2" fill="#c3ccdf"/>
+                <circle cx="20.6" cy="-18.4" r="3.2" fill="#7f8ba6" opacity="0.8"/>
+                <circle cx="-24" cy="6"   r="3.2" fill="#c3ccdf"/>
+                <circle cx="-23.5" cy="6.5" r="2.3" fill="#7f8ba6" opacity="0.8"/>
+                <circle cx="6"   cy="-28" r="2.4" fill="#c3ccdf"/>
+                <circle cx="6.4" cy="-27.6" r="1.7" fill="#7f8ba6" opacity="0.8"/>
+                <circle cx="26"  cy="18"  r="2.8" fill="#c3ccdf"/>
+                <circle cx="26.4" cy="18.4" r="2"   fill="#7f8ba6" opacity="0.8"/>
+            </g>
+            <!-- terminator -->
+            <circle cx="-34" cy="-2" r="48" fill="#0a0f24" opacity="0.6" filter="url(#soft-sm)"/>
         </g>
     </g>
 
@@ -80,30 +91,41 @@
      wrapper; the inner .cloud group is what drifts, so the animation
      is the same for all of them and only the timing differs. They
      start and finish off the edge of the scene, so the loop never
-     shows a cloud jumping back. -->
-<g id="clouds" fill="#ffffff">
+     shows a cloud jumping back. Each has a flat, slightly grey
+     underside and a softened edge.
+
+     The two high clouds stay put as you turn, like the sun and moon.
+     Only the low one (inside #skySway) shifts with the heading, which
+     is enough to suggest the sky has depth. -->
+<g id="clouds">
 
     <g transform="translate(0, 145)">
-        <g class="cloud" style="animation-duration: 130s; animation-delay: -34s" opacity="0.85">
-            <ellipse cx="-20" cy="5"  rx="70" ry="26"/>
-            <ellipse cx="30"  cy="-9" rx="52" ry="32"/>
-            <ellipse cx="-70" cy="-5" rx="44" ry="24"/>
-            <ellipse cx="78"  cy="7"  rx="40" ry="20"/>
+        <g class="cloud" style="animation-duration: 130s; animation-delay: -34s" opacity="0.9" filter="url(#soft-xs)">
+            <ellipse cx="0"   cy="10" rx="118" ry="14" fill="#c9d6e6"/>
+            <ellipse cx="-20" cy="5"  rx="70" ry="26" fill="#ffffff"/>
+            <ellipse cx="30"  cy="-9" rx="52" ry="32" fill="#ffffff"/>
+            <ellipse cx="-70" cy="-5" rx="44" ry="24" fill="#ffffff"/>
+            <ellipse cx="78"  cy="7"  rx="40" ry="20" fill="#ffffff"/>
+            <ellipse cx="10"  cy="14" rx="100" ry="8" fill="#b7c6d9" opacity="0.6"/>
         </g>
     </g>
 
     <g transform="translate(0, 93)">
-        <g class="cloud" style="animation-duration: 98s; animation-delay: -61s" opacity="0.6">
-            <ellipse cx="0"   cy="5"  rx="60" ry="20"/>
-            <ellipse cx="45"  cy="-5" rx="44" ry="26"/>
-            <ellipse cx="-44" cy="-1" rx="36" ry="18"/>
+        <g class="cloud" style="animation-duration: 98s; animation-delay: -61s" opacity="0.7" filter="url(#soft-xs)">
+            <ellipse cx="0"   cy="5"  rx="60" ry="20" fill="#ffffff"/>
+            <ellipse cx="45"  cy="-5" rx="44" ry="26" fill="#ffffff"/>
+            <ellipse cx="-44" cy="-1" rx="36" ry="18" fill="#ffffff"/>
+            <ellipse cx="4"   cy="12" rx="80" ry="7"  fill="#b7c6d9" opacity="0.55"/>
         </g>
     </g>
 
-    <g transform="translate(0, 246)">
-        <g class="cloud" style="animation-duration: 168s; animation-delay: -12s" opacity="0.45">
-            <ellipse cx="0"  cy="4"  rx="80" ry="18"/>
-            <ellipse cx="50" cy="-4" rx="50" ry="22"/>
+    <g id="skySway">
+        <g transform="translate(0, 246)">
+            <g class="cloud" style="animation-duration: 168s; animation-delay: -12s" opacity="0.5" filter="url(#soft-xs)">
+                <ellipse cx="0"  cy="4"  rx="80" ry="18" fill="#ffffff"/>
+                <ellipse cx="50" cy="-4" rx="50" ry="22" fill="#ffffff"/>
+                <ellipse cx="10" cy="12" rx="90" ry="6"  fill="#b7c6d9" opacity="0.5"/>
+            </g>
         </g>
     </g>
 

@@ -10,46 +10,72 @@
     position: absolute;
     top: 26px;
     left: 30px;
-    max-width: 330px;
+    max-width: 340px;
     pointer-events: none;
 }
 
 .hud h1 {
     margin: 0;
-    font-size: 30px;
-    font-weight: 600;
-    letter-spacing: 0.02em;
+    font-family: "Cormorant Garamond", "Iowan Old Style", Georgia, serif;
+    font-size: 40px;
+    font-weight: 500;
+    font-style: italic;
+    letter-spacing: 0.01em;
+    line-height: 1;
     text-shadow: 0 2px 18px rgba(0, 0, 0, 0.55);
 }
 
+.hud h1 .dot {
+    font-style: normal;
+    opacity: 0.45;
+    margin: 0 0.25em;
+}
+
+.hud h1 .sub {
+    font-family: "Barlow Condensed", "Avenir Next Condensed", sans-serif;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 15px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    opacity: 0.8;
+    vertical-align: 0.3em;
+}
+
 .hud p {
-    margin: 8px 0 0;
+    margin: 10px 0 0;
     font-size: 14px;
     line-height: 1.5;
-    opacity: 0.8;
+    opacity: 0.82;
     text-shadow: 0 1px 10px rgba(0, 0, 0, 0.6);
 }
 
-/* ---------------- status panel ---------------- */
+/* ---------------- status panel ----------------
+   Reads like a small control board: each value carries a lit or
+   unlit indicator, and the values are set in the same condensed
+   face as the lamp labels.
+-------------------------------------------------- */
 
 .panel {
     position: absolute;
-    top: 122px;
+    top: 132px;
     left: 30px;
-    width: 260px;
-    padding: 16px 18px;
+    width: 268px;
+    padding: 16px 18px 14px;
     border-radius: 16px;
-    background: rgba(8, 12, 28, 0.55);
+    background: linear-gradient(180deg, rgba(14, 19, 38, 0.62), rgba(6, 9, 22, 0.62));
     border: 1px solid rgba(255, 255, 255, 0.12);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(16px) saturate(1.2);
+    -webkit-backdrop-filter: blur(16px) saturate(1.2);
     font-size: 13px;
 }
 
 .panel h2 {
-    margin: 0 0 12px;
-    font-size: 11px;
-    letter-spacing: 0.18em;
+    margin: 0 0 10px;
+    font-family: "Barlow Condensed", "Avenir Next Condensed", sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.3em;
     text-transform: uppercase;
     opacity: 0.55;
     font-weight: 600;
@@ -59,18 +85,49 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 5px 0;
+    padding: 6px 0;
 }
 
 .row + .row { border-top: 1px solid rgba(255, 255, 255, 0.07); }
-.row span:first-child { opacity: 0.75; }
+.row span:first-child { opacity: 0.78; font-weight: 500; }
 
-.val { font-variant-numeric: tabular-nums; font-weight: 600; }
+.val {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: "Barlow Condensed", "Avenir Next Condensed", sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    font-variant-numeric: tabular-nums;
+}
+
+/* the indicator lamp */
+.val::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+    box-shadow: 0 0 8px currentColor;
+    opacity: 0.95;
+    transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
 .val.on    { color: #ffd479; }
-.val.off   { color: #6b7890; }
+.val.off   { color: #5f6c84; }
 .val.yes   { color: #8ff0b0; }
-.val.no    { color: #6b7890; }
-.val.waiting { color: #8a94a8; letter-spacing: 0.12em; }
+.val.no    { color: #5f6c84; }
+.val.waiting { color: #8a94a8; letter-spacing: 0.2em; }
+
+.val.off::before,
+.val.no::before  { box-shadow: none; opacity: 0.5; }
+.val.waiting::before { box-shadow: none; animation: blink 0.9s ease-in-out infinite; }
+
+@keyframes blink {
+    0%, 100% { opacity: 0.25; }
+    50%      { opacity: 0.9; }
+}
 
 .reset {
     margin-top: 14px;
@@ -80,13 +137,116 @@
     border: 1px solid rgba(255, 255, 255, 0.16);
     background: rgba(255, 255, 255, 0.06);
     color: #e8eefc;
-    font: inherit;
-    font-size: 12px;
-    letter-spacing: 0.06em;
+    font-family: "Barlow Condensed", "Avenir Next Condensed", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.22em;
     cursor: pointer;
-    transition: background 0.2s ease;
+    transition: background 0.2s ease, border-color 0.2s ease;
 }
-.reset:hover { background: rgba(255, 255, 255, 0.14); }
+.reset:hover { background: rgba(255, 255, 255, 0.14); border-color: rgba(255, 255, 255, 0.3); }
+
+
+/* ---------------- moving about ----------------
+   A four-way pad for touch screens and mice (hold to move), and
+   a mini map of the park with your position on it. The compass
+   strip at the top names what is ahead of you.
+-------------------------------------------------- */
+
+.pad {
+    position: absolute;
+    right: 30px;
+    bottom: 30px;
+    display: grid;
+    grid-template-columns: repeat(3, 44px);
+    grid-template-rows: repeat(2, 44px);
+    gap: 6px;
+    user-select: none;
+}
+.pad button {
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(8, 12, 28, 0.5);
+    color: #f3f6ff;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    touch-action: none;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: background 0.15s ease;
+}
+.pad button:hover  { background: rgba(255, 255, 255, 0.14); }
+.pad button:active { background: rgba(255, 217, 138, 0.35); }
+.pad button[data-dir="forward"] { grid-column: 2; grid-row: 1; }
+.pad button[data-dir="left"]    { grid-column: 1; grid-row: 2; }
+.pad button[data-dir="back"]    { grid-column: 2; grid-row: 2; }
+.pad button[data-dir="right"]   { grid-column: 3; grid-row: 2; }
+
+.minimap {
+    position: absolute;
+    right: 30px;
+    bottom: 140px;
+    width: 150px;
+    height: 164px;
+    padding: 6px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(8, 12, 28, 0.5);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+    pointer-events: none;
+}
+.minimap svg { width: 100%; height: 100%; display: block; border-radius: 9px; overflow: hidden; }
+
+
+.compass {
+    position: absolute;
+    top: 26px;
+    left: 50%;
+    width: min(520px, 56vw);
+    height: 34px;
+    transform: translateX(-50%);
+    border-radius: 17px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(8, 12, 28, 0.45);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    overflow: hidden;
+    pointer-events: none;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+}
+
+.compass .track { position: absolute; inset: 0; }
+
+.compass .place {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    white-space: nowrap;
+    font-family: "Barlow Condensed", "Avenir Next Condensed", sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #c9d2e6;
+    transition: color 0.3s ease;
+}
+.compass .place.here { color: #ffd98a; font-weight: 600; }
+
+.compass .needle {
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    width: 2px;
+    height: 7px;
+    margin-left: -1px;
+    background: #ffd98a;
+    border-radius: 1px;
+    box-shadow: 0 0 8px #ffd98a;
+}
 
 
 /* ---------------- stargaze banner ----------------
@@ -116,16 +276,20 @@
 }
 
 .banner .big {
-    font-size: clamp(30px, 5vw, 62px);
-    font-weight: 300;
-    letter-spacing: 0.1em;
+    font-family: "Cormorant Garamond", "Iowan Old Style", Georgia, serif;
+    font-style: italic;
+    font-size: clamp(36px, 6vw, 76px);
+    font-weight: 500;
+    letter-spacing: 0.04em;
     text-shadow: 0 0 34px rgba(160, 190, 255, 0.75), 0 0 90px rgba(120, 90, 220, 0.5);
 }
 
 .banner .small {
     margin-top: 12px;
+    font-family: "Barlow Condensed", "Avenir Next Condensed", sans-serif;
     font-size: clamp(12px, 1.3vw, 16px);
-    letter-spacing: 0.34em;
+    font-weight: 500;
+    letter-spacing: 0.4em;
     text-transform: uppercase;
     opacity: 0.72;
 }
@@ -136,4 +300,6 @@
 @media (max-width: 720px) {
     .panel { width: calc(100% - 60px); }
     .hud   { max-width: calc(100% - 60px); }
+    .compass { display: none; }
+    .minimap { display: none; }
 }

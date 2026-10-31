@@ -23,11 +23,12 @@ export async function askHardware(state, onVerdict, onTrouble) {
 
     const ticket = ++latest;
 
-    // a, b, c, d are the four lamps; 1 = lit. The hardware names them
-    // this way, so the wire format does too.
+    // a, b, c, d are the four lamps (fountain, trail, playground,
+    // stargazing area); 1 = lit. The hardware names them this way, so
+    // the wire format does too.
     const payload = {
         sunset: state.night ? 1 : 0,
-        a: state.lamps.parking    ? 1 : 0,
+        a: state.lamps.fountain   ? 1 : 0,
         b: state.lamps.trail      ? 1 : 0,
         c: state.lamps.playground ? 1 : 0,
         d: state.lamps.stargaze   ? 1 : 0

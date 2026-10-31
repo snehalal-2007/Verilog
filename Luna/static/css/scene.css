@@ -9,6 +9,7 @@
 /* ---------------- sky layers ---------------- */
 
 #haze      { opacity: var(--haze-op);   transition: opacity 1.8s ease; }
+#sunWash   { opacity: var(--wash-op);   transition: opacity 1.8s ease; }
 #stars     { opacity: var(--star-op);   transition: opacity 2.0s ease; }
 #galaxy    { opacity: var(--galaxy-op); transition: opacity 2.6s ease; }
 #nightTint { opacity: var(--night-tint); transition: opacity 1.8s ease; }
@@ -55,7 +56,7 @@
 
 #celestial { cursor: pointer; }
 #celestial:hover #sunGroup,
-#celestial:hover #moonGroup { transform: scale(1.06); }
+#celestial:hover #moonGroup { transform: scale(1.05); }
 
 #sunGroup, #moonGroup {
     transform-box: fill-box;
@@ -66,17 +67,47 @@
 #sunGroup  { opacity: var(--sun-op); }
 #moonGroup { opacity: var(--moon-op); }
 
-#sunRays {
-    transform-box: fill-box;
-    transform-origin: center;
-    animation: spin 60s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
+/* the sun breathes very slightly, the way glare does */
 #sunCore { animation: pulse 5s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
 @keyframes pulse {
     0%, 100% { transform: scale(1); }
     50%      { transform: scale(1.03); }
+}
+
+
+/* ---------------- night falls on the park ----------------
+   The tint rectangle only reaches the ground and the lower part of
+   the scene. Tall things near you, like a tree canopy, rise above
+   it, so everything that stands up is dimmed as well, except the
+   lamp posts, which carry their own light. */
+
+#items > g:not(:has(.lamp)) {
+    filter: brightness(var(--sprite-dim, 1));
+    transition: filter 1.8s ease;
+}
+
+
+/* ---------------- the fountain ---------------- */
+
+.spray {
+    stroke-dasharray: 6 5;
+    animation: flow 0.9s linear infinite;
+}
+@keyframes flow { to { stroke-dashoffset: -22; } }
+
+.spill path {
+    stroke-dasharray: 4 6;
+    animation: flow 0.7s linear infinite;
+}
+
+.drop { animation: fall 1.4s ease-in infinite; }
+@keyframes fall {
+    0%   { transform: translateY(0);    opacity: 0.9; }
+    100% { transform: translateY(44px); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .spray, .spill path, .drop { animation: none; }
 }
 
 
@@ -88,12 +119,16 @@ body.day .lamp { cursor: default; }
 .lamp .beam,
 .lamp .pool,
 .lamp .halo   { opacity: 0; transition: opacity 0.7s ease; }
-.lamp .bulb   { fill: #4c5566; transition: fill 0.5s ease; }
 
-.lamp.on .beam { opacity: 0.55; }
-.lamp.on .pool { opacity: 0.75; }
-.lamp.on .halo { opacity: 0.95; }
-.lamp.on .bulb { fill: #fff4cf; }
+/* the bulb and the lantern glass both change colour when lit */
+.lamp .bulb   { fill: #3d4452; transition: fill 0.5s ease; }
+.lamp .glass  { fill: rgba(150, 170, 200, 0.28); transition: fill 0.5s ease; }
+
+.lamp.on .beam  { opacity: 0.55; }
+.lamp.on .pool  { opacity: 0.75; }
+.lamp.on .halo  { opacity: 0.95; }
+.lamp.on .bulb  { fill: #fffaf0; }
+.lamp.on .glass { fill: url(#lanternGlass); }
 
 .lamp .pole,
 .lamp .bulb   { filter: brightness(var(--lamp-dim, 1)); transition: fill 0.5s ease, filter 2.6s ease; }  /* 2.6s matches the galaxy fade-in */
@@ -101,20 +136,22 @@ body.day .lamp { cursor: default; }
 .lamp .hit { fill: transparent; }
 .lamp:hover .pole { filter: brightness(calc(var(--lamp-dim, 1) * 1.45)); }  /* hover still brightens, from the dimmed level */
 
+/* Labels: a condensed signage face, like the plates on a real post */
 .lamp .tag {
-    font-size: 13px;
+    font-family: "Barlow Condensed", "Avenir Next Condensed", "Arial Narrow", sans-serif;
+    font-size: 16px;
     font-weight: 600;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
     text-anchor: middle;
-    fill: #e8eefc;
+    fill: #f1f4fb;
     paint-order: stroke;
-    stroke: rgba(3, 6, 18, 0.75);
-    stroke-width: 3.5px;
+    stroke: rgba(3, 6, 18, 0.7);
+    stroke-width: 3px;
     pointer-events: none;
     opacity: var(--tag-op, 1);
     transition: opacity 2.6s ease;
 }
-.lamp .tag.state { font-size: 11px; font-weight: 500; opacity: calc(var(--tag-op, 1) * 0.85); }
 
 
 /* ---------------- things you can push around ----------------

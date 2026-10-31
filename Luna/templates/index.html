@@ -7,6 +7,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Luna — Stargazing Park</title>
 
+    <!-- typefaces: Cormorant Garamond (title), Manrope (interface),
+         Barlow Condensed (lamp labels and readouts) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Manrope:wght@400;500;600;700&display=swap">
+
     <!-- theme first: every other stylesheet reads its custom properties -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
@@ -23,27 +29,42 @@
 
 <div id="stage">
 
+    {# You walk through the park. static/js/world.js lays it out from
+       above in metres; static/js/engine.js draws it in perspective from
+       wherever you are standing, every frame:
+
+         skyLayer    fixed: sun, moon and stars stay put; one low cloud
+                     shifts a little as you turn
+         hillsLayer  far away, so it only turns with you
+         lawn        the grass, from the horizon down
+         ground      paths, the lot, the deck, the lake: flat shapes
+                     projected onto the ground plane
+         items       everything that stands up, sorted back to front #}
+
     <svg id="scene" viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid slice">
 
         {% include "partials/defs.html" %}
 
-        {% include "partials/sky.html" %}
-        {% include "partials/landscape.html" %}
-
-        <g id="zones">
-            {% include "partials/parking.html" %}
-            {% include "partials/trail.html" %}
-            {% include "partials/playground.html" %}
-            {% include "partials/stargazing.html" %}
+        <g id="skyLayer">
+            {% include "partials/sky.html" %}
         </g>
+
+        <g id="hillsLayer">
+            <g id="hillsTile">
+                {% include "partials/hills.html" %}
+            </g>
+            <use href="#hillsTile" x="1800"/>
+        </g>
+
+        <rect id="lawn" x="0" y="416" width="1200" height="284" fill="url(#grassGrad)" filter="url(#tex-grass)"/>
+
+        <g id="ground"></g>
+        <g id="items"></g>
 
         <!-- darkens the park at night, but stops at the horizon so
              the sky and the galaxy keep their own colour -->
         <rect id="nightTint" x="0" y="330" width="1200" height="370"
               fill="url(#tintGrad)" pointer-events="none"/>
-
-        <!-- the four lamp posts are drawn by static/js/lamps.js -->
-        <g id="lamps"></g>
 
     </svg>
 

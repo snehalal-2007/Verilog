@@ -1,0 +1,270 @@
+{# sprites.html — things that stand up in the park, drawn once here and
+   cloned into the scene by static/js/engine.js wherever world.js puts
+   them. Every template is bottom-centred on (0, 0): its feet are at
+   y = 0 and it rises into negative y. The engine scales each one by
+   (focal / depth) / u, where u is the template's drawing units per metre.
+
+   These live inside <defs>, so nothing here is drawn directly. #}
+
+<!-- stone gate pillar with a cap: 3.4 m tall at u = 21 -->
+<g id="spr-pillar">
+    <rect x="-12" y="-71" width="24" height="71" rx="1.5" fill="#8c8578"/>
+    <rect x="0"   y="-71" width="12" height="71" fill="#000" opacity="0.22"/>
+    <rect x="-15" y="-75" width="30" height="6" rx="1" fill="#a39b8c"/>
+    <rect x="-14" y="-4"  width="28" height="5" rx="1" fill="#a39b8c"/>
+    <g stroke="#000" stroke-opacity="0.18" stroke-width="1">
+        <path d="M-12 -58 h24 M-12 -44 h24 M-12 -30 h24 M-12 -16 h24"/>
+    </g>
+</g>
+
+<!-- saloon cars, side-on, nose to the left: 1.5 m tall at u = 23.
+     The .car group is what interact.js drags; its wheels roll. -->
+<g id="spr-car-red">
+    <g class="car" data-x="0" data-y="-21.6" data-scale="1" data-min-x="-80" data-max-x="80" transform="translate(0 -21.6)">
+        <ellipse cx="0" cy="21" rx="42" ry="5" fill="#000" opacity="0.4" filter="url(#soft-xs)"/>
+        <path fill="url(#paintRed)" d="M-38 7 L-38 1 Q-38 -4 -32 -5 L-21 -6.5 L-13 -17 Q-10 -20 -5 -20 L14 -20 Q19 -20 22 -17 L30 -7 L35 -5 Q38 -4 38 1 L38 7 Q38 11 35 11 L-35 11 Q-38 11 -38 7 Z"/>
+        <path fill="#000" opacity="0.28" d="M-37 6 L37 6 L37 9.5 Q37 11 35 11 L-35 11 Q-37 11 -37 9.5 Z"/>
+        <path d="M-12 -17.5 Q-8 -19 -4 -19 L13 -19 Q17 -19 20 -17" stroke="#fff" stroke-opacity="0.55" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+        <path fill="url(#glass)" d="M-11 -16 L-5 -18.3 L14 -18.3 L20.5 -16 L26.5 -7.5 L-18.5 -7.5 Z"/>
+        <line x1="3.5" y1="-18" x2="3.5" y2="-7.5" stroke="#1c1f26" stroke-width="1.8"/>
+        <path d="M3.5 -7.5 L3.5 9 M-19 -7.5 L-21 9" stroke="#000" stroke-opacity="0.35" stroke-width="0.9"/>
+        <rect x="-11" y="-3" width="6" height="1.6" rx="0.8" fill="#000" opacity="0.45"/>
+        <rect x="7"   y="-3" width="6" height="1.6" rx="0.8" fill="#000" opacity="0.45"/>
+        <path d="M-17 -9 L-21.5 -9 L-21.5 -5.5 L-17 -5.5 Z" fill="#8a1d16"/>
+        <path d="M-38 -0.5 L-31 -1.5 L-30 2.5 L-38 3.5 Z" fill="#f4f8ff" opacity="0.92"/>
+        <path d="M38 -1 L32 -1 L32 3.5 L38 3.5 Z" fill="#e8352a"/>
+        <rect x="-38.5" y="5" width="6" height="3.5" rx="1" fill="#2a2d33"/>
+        <rect x="32.5"  y="5" width="6" height="3.5" rx="1" fill="#2a2d33"/>
+        <path d="M-29.5 11 A9.5 9.5 0 0 1 -10.5 11 Z" fill="#121418"/>
+        <path d="M10.5 11  A9.5 9.5 0 0 1 29.5 11 Z"  fill="#121418"/>
+        <g class="wheel" data-cx="-20" data-cy="14">
+            <circle cx="-20" cy="14" r="7.6" fill="url(#tyre)"/><circle cx="-20" cy="14" r="4.6" fill="url(#rim)"/>
+            <path d="M-20 10.2 L-20 17.8 M-16.7 12.1 L-23.3 15.9 M-16.7 15.9 L-23.3 12.1" stroke="#6b727d" stroke-width="1.1" stroke-linecap="round"/>
+        </g>
+        <g class="wheel" data-cx="20" data-cy="14">
+            <circle cx="20" cy="14" r="7.6" fill="url(#tyre)"/><circle cx="20" cy="14" r="4.6" fill="url(#rim)"/>
+            <path d="M20 10.2 L20 17.8 M23.3 12.1 L16.7 15.9 M23.3 15.9 L16.7 12.1" stroke="#6b727d" stroke-width="1.1" stroke-linecap="round"/>
+        </g>
+    </g>
+</g>
+
+<g id="spr-car-blue">
+    <g class="car" data-x="0" data-y="-21.6" data-scale="1" data-min-x="-80" data-max-x="80" transform="translate(0 -21.6)">
+        <ellipse cx="0" cy="21" rx="42" ry="5" fill="#000" opacity="0.4" filter="url(#soft-xs)"/>
+        <path fill="url(#paintBlue)" d="M-38 7 L-38 1 Q-38 -4 -32 -5 L-21 -6.5 L-13 -17 Q-10 -20 -5 -20 L14 -20 Q19 -20 22 -17 L30 -7 L35 -5 Q38 -4 38 1 L38 7 Q38 11 35 11 L-35 11 Q-38 11 -38 7 Z"/>
+        <path fill="#000" opacity="0.28" d="M-37 6 L37 6 L37 9.5 Q37 11 35 11 L-35 11 Q-37 11 -37 9.5 Z"/>
+        <path d="M-12 -17.5 Q-8 -19 -4 -19 L13 -19 Q17 -19 20 -17" stroke="#fff" stroke-opacity="0.55" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+        <path fill="url(#glass)" d="M-11 -16 L-5 -18.3 L14 -18.3 L20.5 -16 L26.5 -7.5 L-18.5 -7.5 Z"/>
+        <line x1="3.5" y1="-18" x2="3.5" y2="-7.5" stroke="#1c1f26" stroke-width="1.8"/>
+        <path d="M3.5 -7.5 L3.5 9 M-19 -7.5 L-21 9" stroke="#000" stroke-opacity="0.35" stroke-width="0.9"/>
+        <rect x="-11" y="-3" width="6" height="1.6" rx="0.8" fill="#000" opacity="0.45"/>
+        <rect x="7"   y="-3" width="6" height="1.6" rx="0.8" fill="#000" opacity="0.45"/>
+        <path d="M-17 -9 L-21.5 -9 L-21.5 -5.5 L-17 -5.5 Z" fill="#1d4a86"/>
+        <path d="M-38 -0.5 L-31 -1.5 L-30 2.5 L-38 3.5 Z" fill="#f4f8ff" opacity="0.92"/>
+        <path d="M38 -1 L32 -1 L32 3.5 L38 3.5 Z" fill="#e8352a"/>
+        <rect x="-38.5" y="5" width="6" height="3.5" rx="1" fill="#2a2d33"/>
+        <rect x="32.5"  y="5" width="6" height="3.5" rx="1" fill="#2a2d33"/>
+        <path d="M-29.5 11 A9.5 9.5 0 0 1 -10.5 11 Z" fill="#121418"/>
+        <path d="M10.5 11  A9.5 9.5 0 0 1 29.5 11 Z"  fill="#121418"/>
+        <g class="wheel" data-cx="-20" data-cy="14">
+            <circle cx="-20" cy="14" r="7.6" fill="url(#tyre)"/><circle cx="-20" cy="14" r="4.6" fill="url(#rim)"/>
+            <path d="M-20 10.2 L-20 17.8 M-16.7 12.1 L-23.3 15.9 M-16.7 15.9 L-23.3 12.1" stroke="#6b727d" stroke-width="1.1" stroke-linecap="round"/>
+        </g>
+        <g class="wheel" data-cx="20" data-cy="14">
+            <circle cx="20" cy="14" r="7.6" fill="url(#tyre)"/><circle cx="20" cy="14" r="4.6" fill="url(#rim)"/>
+            <path d="M20 10.2 L20 17.8 M23.3 12.1 L16.7 15.9 M23.3 15.9 L16.7 12.1" stroke="#6b727d" stroke-width="1.1" stroke-linecap="round"/>
+        </g>
+    </g>
+</g>
+
+<!-- swing set: 2.6 m tall at u = 33. The .swing groups sway (interact.js). -->
+<g id="spr-swing">
+    <g transform="translate(0 -30)">
+        <ellipse cx="10" cy="32" rx="66" ry="9" fill="#000" opacity="0.28" filter="url(#soft-xs)"/>
+        <g fill="url(#steel)">
+            <path d="M-49 30 L-27 -52 L-21 -52 L-43 30 Z"/><path d="M-5 30 L-27 -52 L-21 -52 L1 30 Z"/>
+            <path d="M21 30 L43 -52 L49 -52 L27 30 Z"/><path d="M65 30 L43 -52 L49 -52 L71 30 Z"/>
+        </g>
+        <g fill="#2a2f36">
+            <rect x="-51" y="27" width="10" height="5" rx="1.5"/><rect x="-7" y="27" width="10" height="5" rx="1.5"/>
+            <rect x="19" y="27" width="10" height="5" rx="1.5"/><rect x="63" y="27" width="10" height="5" rx="1.5"/>
+        </g>
+        <g class="swing" data-pivot-x="0" data-pivot-y="-50" data-reach="62">
+            <g stroke="#6f7781" stroke-width="2.2"><line x1="-8" y1="-50" x2="-8" y2="-6"/><line x1="8" y1="-50" x2="8" y2="-6"/></g>
+            <g stroke="#d9dfe6" stroke-width="1.3" stroke-dasharray="2.2 2.2"><line x1="-8" y1="-50" x2="-8" y2="-6"/><line x1="8" y1="-50" x2="8" y2="-6"/></g>
+            <path d="M-13 -7 Q0 -3.5 13 -7 L13 -2.5 Q0 1 -13 -2.5 Z" fill="#2a2f38"/>
+        </g>
+        <g class="swing" data-pivot-x="34" data-pivot-y="-50" data-reach="62">
+            <g stroke="#6f7781" stroke-width="2.2"><line x1="26" y1="-50" x2="26" y2="-2"/><line x1="42" y1="-50" x2="42" y2="-2"/></g>
+            <g stroke="#d9dfe6" stroke-width="1.3" stroke-dasharray="2.2 2.2"><line x1="26" y1="-50" x2="26" y2="-2"/><line x1="42" y1="-50" x2="42" y2="-2"/></g>
+            <path d="M21 -3 Q34 0.5 47 -3 L47 1.5 Q34 5 21 1.5 Z" fill="#2a2f38"/>
+        </g>
+        <rect x="-30" y="-56" width="82" height="8" rx="4" fill="url(#steelV)"/>
+        <rect x="-30" y="-55" width="82" height="2.2" rx="1" fill="#fff" opacity="0.35"/>
+        <g fill="#2a2f36"><rect x="-31" y="-57" width="6" height="10" rx="2"/><rect x="47" y="-57" width="6" height="10" rx="2"/></g>
+    </g>
+</g>
+
+<!-- slide with an enclosed platform: 3 m tall at u = 37 -->
+<g id="spr-slide">
+    <g transform="translate(-10 -34)">
+        <ellipse cx="16" cy="38" rx="66" ry="9" fill="#000" opacity="0.28" filter="url(#soft-xs)"/>
+        <path fill="#000" opacity="0.14" filter="url(#soft-sm)" d="M-6 -30 C 18 -18 26 12 46 36 L 74 40 L 70 44 L 40 42 C 16 18 8 -10 -12 -24 Z"/>
+        <g fill="url(#steel)"><path d="M19 0 L18 34 L24 34 L25 0 Z"/><path d="M30 20 L29 34 L35 34 L36 20 Z"/></g>
+        <g fill="#2a2f36"><rect x="16" y="32" width="10" height="4" rx="1"/><rect x="27" y="32" width="10" height="4" rx="1"/></g>
+        <path fill="#6b7682" d="M-10 -42 C 14 -30 22 2 40 28 Q 46 36 72 38 L 72 44 Q 44 42 36 32 C 18 6 10 -24 -12 -36 Z"/>
+        <path fill="#000" opacity="0.25" d="M-10 -42 C 14 -30 22 2 40 28 Q 46 36 72 38 L 72 41 Q 45 39 38 30 C 20 4 12 -26 -11 -39 Z"/>
+        <path fill="url(#chuteGrad)" d="M2 -50 C 26 -38 32 -6 50 20 Q 56 28 72 30 L 72 38 Q 46 36 40 28 C 22 2 14 -30 -10 -42 Z"/>
+        <path d="M-4 -46 C 20 -34 27 -2 45 24 Q 51 32 70 34" stroke="#fff" stroke-opacity="0.6" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+        <path d="M2 -50 C 26 -38 32 -6 50 20 Q 56 28 72 30" stroke="#59646f" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M2 -50 C 26 -38 32 -6 50 20 Q 56 28 72 30" stroke="#dfe5eb" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+        <path d="M-10 -42 C 14 -30 22 2 40 28 Q 46 36 72 38" stroke="#59646f" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+        <g fill="url(#steel)"><rect x="-33" y="-50" width="4" height="84" rx="2"/><rect x="-15" y="-50" width="4" height="84" rx="2"/></g>
+        <g stroke="#e0a13c" stroke-width="3.5" stroke-linecap="round">
+            <line x1="-31" y1="-36" x2="-13" y2="-36"/><line x1="-31" y1="-22" x2="-13" y2="-22"/><line x1="-31" y1="-8" x2="-13" y2="-8"/>
+            <line x1="-31" y1="6" x2="-13" y2="6"/><line x1="-31" y1="20" x2="-13" y2="20"/>
+        </g>
+        <rect x="-32" y="-50" width="38" height="7" rx="1.5" fill="url(#paintYellow)"/>
+        <rect x="-32" y="-45" width="38" height="2" fill="#000" opacity="0.3"/>
+        <g fill="url(#steel)"><rect x="-32.5" y="-76" width="3.2" height="27" rx="1.5"/><rect x="2.5" y="-76" width="3.2" height="27" rx="1.5"/></g>
+        <g stroke="#c2c9d1" stroke-width="1.4" stroke-linecap="round"><line x1="-22" y1="-73" x2="-22" y2="-50"/><line x1="-13" y1="-73" x2="-13" y2="-50"/><line x1="-4" y1="-73" x2="-4" y2="-50"/></g>
+        <rect x="-34" y="-78" width="40" height="3.2" rx="1.6" fill="url(#steelV)"/>
+        <rect x="-34" y="-64" width="40" height="2.2" rx="1.1" fill="#aab3bd"/>
+        <g fill="#2a2f36"><rect x="-35" y="32" width="8" height="4" rx="1"/><rect x="-17" y="32" width="8" height="4" rx="1"/></g>
+    </g>
+</g>
+
+<!-- seesaw: 1 m tall at u = 38. The .seesaw group tips (interact.js). -->
+<g id="spr-seesaw">
+    <g transform="translate(0 -13)">
+        <ellipse cx="0" cy="14" rx="46" ry="7" fill="#000" opacity="0.25" filter="url(#soft-xs)"/>
+        <g fill="url(#steel)"><path d="M-13 13 L-2 -8 L2 -8 L-7 13 Z"/><path d="M13 13 L2 -8 L-2 -8 L7 13 Z"/></g>
+        <rect x="-15" y="11" width="30" height="4" rx="1.5" fill="#2a2f36"/>
+        <circle cx="0" cy="-8" r="3.2" fill="#3b424c"/><circle cx="0" cy="-8" r="1.3" fill="#9aa3ae"/>
+        <g class="seesaw" data-pivot-x="0" data-pivot-y="-8" data-half="46" data-rest="-9">
+            <rect x="-46" y="-14" width="92" height="7" rx="3.5" fill="url(#paintGreen)"/>
+            <rect x="-46" y="-14" width="92" height="2" rx="1" fill="#fff" opacity="0.3"/>
+            <rect x="-44" y="-17" width="14" height="4" rx="2" fill="#1f7f55"/><rect x="30" y="-17" width="14" height="4" rx="2" fill="#1f7f55"/>
+            <path d="M-31 -14 L-31 -22 Q-31 -24 -29 -24 L-24 -24 M31 -14 L31 -22 Q31 -24 29 -24 L24 -24" stroke="#c2c9d1" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+        </g>
+    </g>
+</g>
+
+<!-- refractor telescope on a tripod: 1.6 m tall at u = 36 -->
+<g id="spr-telescope">
+    <g transform="translate(0 -29)">
+        <ellipse cx="0" cy="28" rx="34" ry="6" fill="#000" opacity="0.35" filter="url(#soft-xs)"/>
+        <g fill="#2f3744"><path d="M-2 -6 L-28 27 L-24 28 L1.5 -6 Z"/><path d="M-2 -6 L24 27 L28 28 L1.5 -6 Z"/><path d="M-1.5 -6 L-1 30 L3 30 L2 -6 Z"/></g>
+        <g fill="#6c7786"><path d="M-2 -6 L-27 26 L-26 26 L0 -6 Z"/></g>
+        <g stroke="#4a5363" stroke-width="1.6" stroke-linecap="round"><line x1="0" y1="12" x2="-14" y2="10"/><line x1="0" y1="12" x2="14" y2="10"/></g>
+        <g fill="#1d222b"><rect x="-30" y="26" width="7" height="3" rx="1"/><rect x="23" y="26" width="7" height="3" rx="1"/><rect x="-3" y="28" width="7" height="3" rx="1"/></g>
+        <rect x="-7" y="-16" width="14" height="12" rx="2.5" fill="#262d3a"/><rect x="-7" y="-16" width="14" height="3" rx="1.5" fill="#4a5466"/>
+        <g transform="translate(0, -16) rotate(-34)">
+            <rect x="-34" y="-9" width="70" height="18" rx="3" fill="url(#tubeGrad)"/>
+            <rect x="30" y="-11" width="24" height="22" rx="3" fill="url(#tubeGrad)"/>
+            <ellipse cx="54" cy="0" rx="3" ry="11" fill="#0b1020"/><ellipse cx="54.5" cy="-2" rx="1.6" ry="6" fill="#8fb8ff" opacity="0.55"/>
+            <rect x="-30" y="-6" width="80" height="2.2" rx="1" fill="#fff" opacity="0.22"/>
+            <rect x="-45" y="-5" width="13" height="10" rx="2" fill="#39414f"/><rect x="-42" y="-16" width="6" height="12" rx="2" fill="#39414f"/>
+            <rect x="-8" y="-18" width="28" height="6" rx="3" fill="#1c2230"/>
+        </g>
+    </g>
+</g>
+
+<!-- Adirondack chairs, side-on: 1 m tall at u = 40 -->
+<g id="spr-chair-teal">
+    <g transform="translate(0 -18)">
+        <ellipse cx="0" cy="18" rx="30" ry="5" fill="#000" opacity="0.3" filter="url(#soft-xs)"/>
+        <path d="M-16 18 L-3 -22 L1.5 -21 L-11 18 Z" fill="#245f68"/>
+        <g fill="url(#paintTeal)"><path d="M-4 -20 L-1 -21 L6 2 L3 3 Z"/><path d="M-8 -17 L-5 -18.5 L2 3 L-1 4 Z"/><path d="M-12 -14 L-9 -15.5 L-2 4 L-5 5 Z"/></g>
+        <path d="M-12 4 L16 0 L16 3 L-12 7 Z" fill="url(#paintTeal)"/><path d="M-10 8 L16 4.5 L16 7.5 L-10 11 Z" fill="#2c7a84"/>
+        <path d="M-12 -7 L18 -9 L18 -5.5 L-12 -3.5 Z" fill="#5ec1c6"/>
+        <rect x="13" y="-6" width="3.6" height="24" rx="1" fill="#245f68"/><rect x="-10" y="-4" width="2.6" height="9" fill="#245f68"/>
+    </g>
+</g>
+<g id="spr-chair-cream">
+    <g transform="translate(0 -18)">
+        <ellipse cx="0" cy="18" rx="30" ry="5" fill="#000" opacity="0.3" filter="url(#soft-xs)"/>
+        <path d="M-16 18 L-3 -22 L1.5 -21 L-11 18 Z" fill="#8a7a62"/>
+        <g fill="url(#paintCream)"><path d="M-4 -20 L-1 -21 L6 2 L3 3 Z"/><path d="M-8 -17 L-5 -18.5 L2 3 L-1 4 Z"/><path d="M-12 -14 L-9 -15.5 L-2 4 L-5 5 Z"/></g>
+        <path d="M-12 4 L16 0 L16 3 L-12 7 Z" fill="url(#paintCream)"/><path d="M-10 8 L16 4.5 L16 7.5 L-10 11 Z" fill="#b9ae97"/>
+        <path d="M-12 -7 L18 -9 L18 -5.5 L-12 -3.5 Z" fill="#f4eee0"/>
+        <rect x="13" y="-6" width="3.6" height="24" rx="1" fill="#8a7a62"/><rect x="-10" y="-4" width="2.6" height="9" fill="#8a7a62"/>
+    </g>
+</g>
+
+<!-- slatted bench with cast iron ends: 1 m tall at u = 38 -->
+<g id="spr-bench">
+    <g transform="translate(0 -16)">
+        <ellipse cx="0" cy="16" rx="38" ry="5" fill="#000" opacity="0.3" filter="url(#soft-xs)"/>
+        <g fill="none" stroke="#2c3036" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M-30 16 L-30 -2 Q-30 -22 -24 -22 L-18 -22"/><path d="M30 16 L30 -2 Q30 -22 24 -22 L18 -22"/><path d="M-30 4 L-22 4 M22 4 L30 4"/>
+        </g>
+        <rect x="-33" y="-21" width="66" height="4.2" rx="1.2" fill="url(#plankLight)"/><rect x="-33" y="-15" width="66" height="4.2" rx="1.2" fill="url(#plankDark)"/>
+        <rect x="-33" y="-9"  width="66" height="4.2" rx="1.2" fill="url(#plankLight)"/>
+        <rect x="-34" y="-1"  width="68" height="4.5" rx="1.2" fill="url(#plankLight)"/><rect x="-34" y="4.5" width="68" height="4.5" rx="1.2" fill="url(#plankDark)"/>
+    </g>
+</g>
+
+<!-- picnic table: 0.9 m tall at u = 40 -->
+<g id="spr-picnic">
+    <g transform="translate(0 -16)">
+        <ellipse cx="0" cy="18" rx="46" ry="6" fill="#000" opacity="0.3" filter="url(#soft-xs)"/>
+        <g stroke="#6b4a2b" stroke-width="4" stroke-linecap="round">
+            <line x1="-20" y1="-14" x2="-32" y2="16"/><line x1="20" y1="-14" x2="32" y2="16"/><line x1="-20" y1="-14" x2="-8" y2="16"/><line x1="20" y1="-14" x2="8" y2="16"/>
+        </g>
+        <rect x="-44" y="2" width="30" height="4.5" rx="1.5" fill="url(#plankLight)"/><rect x="14" y="2" width="30" height="4.5" rx="1.5" fill="url(#plankLight)"/>
+        <rect x="-30" y="-20" width="60" height="4.5" rx="1.5" fill="url(#plankLight)"/><rect x="-30" y="-15" width="60" height="4.5" rx="1.5" fill="url(#plankDark)"/>
+    </g>
+</g>
+
+<!-- the fountain: a stone pedestal and two bowls, water spilling from
+     bowl to bowl and a jet on top. 4 m tall at u = 30; its feet stand at
+     the basin's water level. The spray animates in scene.css. -->
+<g id="spr-fountain">
+    <!-- lower bowl -->
+    <ellipse cx="0" cy="-30" rx="46" ry="9" fill="#b9b3a3"/>
+    <path d="M-46 -30 Q-44 -12 -30 -8 L30 -8 Q44 -12 46 -30 Z" fill="#a39d8e"/>
+    <path d="M-46 -30 Q-44 -12 -30 -8 L0 -8 L0 -30 Z" fill="#000" opacity="0.12"/>
+    <ellipse cx="0" cy="-30" rx="40" ry="6.5" fill="url(#lakeGrad)"/>
+    <ellipse cx="-8" cy="-31" rx="16" ry="2" fill="#fff" opacity="0.22"/>
+    <!-- column to the upper bowl -->
+    <path d="M-8 -30 L-6 -62 L6 -62 L8 -30 Z" fill="#aaa494"/>
+    <path d="M-1 -30 L-0.5 -62" stroke="#fff" stroke-opacity="0.3" stroke-width="1.2"/>
+    <!-- upper bowl -->
+    <ellipse cx="0" cy="-66" rx="24" ry="5" fill="#b9b3a3"/>
+    <path d="M-24 -66 Q-22 -54 -14 -52 L14 -52 Q22 -54 24 -66 Z" fill="#a39d8e"/>
+    <ellipse cx="0" cy="-66" rx="20" ry="3.6" fill="url(#lakeGrad)"/>
+    <!-- water spilling from the upper bowl -->
+    <g class="spill" stroke="#dff1ff" stroke-opacity="0.75" stroke-width="2" fill="none" stroke-linecap="round">
+        <path d="M-20 -65 Q-21 -50 -19 -33"/><path d="M20 -65 Q21 -50 19 -33"/>
+        <path d="M-9 -66 Q-10 -50 -9 -33"/><path d="M9 -66 Q10 -50 9 -33"/>
+    </g>
+    <!-- finial and jet -->
+    <path d="M-4 -66 L-3 -80 L3 -80 L4 -66 Z" fill="#aaa494"/>
+    <g class="jet" fill="none" stroke="#eaf6ff" stroke-linecap="round">
+        <path class="spray" d="M0 -80 Q-14 -108 -26 -70" stroke-width="2.2" stroke-opacity="0.8"/>
+        <path class="spray" d="M0 -80 Q14 -108 26 -70"  stroke-width="2.2" stroke-opacity="0.8"/>
+        <path class="spray" d="M0 -80 Q-5 -112 -12 -72" stroke-width="1.8" stroke-opacity="0.7"/>
+        <path class="spray" d="M0 -80 Q5 -112 12 -72"   stroke-width="1.8" stroke-opacity="0.7"/>
+        <path class="spray" d="M0 -80 L0 -118"          stroke-width="2.6" stroke-opacity="0.9"/>
+    </g>
+    <g class="drops" fill="#f3faff">
+        <circle class="drop" cx="-22" cy="-74" r="1.6"/><circle class="drop" cx="22" cy="-72" r="1.4" style="animation-delay: -0.5s"/>
+        <circle class="drop" cx="-10" cy="-78" r="1.2" style="animation-delay: -0.9s"/><circle class="drop" cx="10" cy="-76" r="1.3" style="animation-delay: -0.3s"/>
+        <circle class="drop" cx="0" cy="-110" r="1.8" style="animation-delay: -0.7s"/>
+    </g>
+</g>
+
+<!-- a duck: 0.35 m at u = 40 -->
+<g id="spr-duck">
+    <ellipse cx="0" cy="-4" rx="7" ry="3.5" fill="#3b3a35"/><circle cx="6" cy="-8.5" r="2.8" fill="#3b3a35"/>
+    <path d="M8.5 -8.5 l 3.5 0.7 l -3.5 0.9 Z" fill="#e2a03a"/>
+</g>
+
+<!-- reeds at the water's edge: 1.3 m at u = 30 -->
+<g id="spr-reeds">
+    <g stroke="#3f6b2e" stroke-width="2" stroke-linecap="round" fill="none">
+        <path d="M-8 0 q 2 -22 6 -34 M0 0 q 0 -24 -2 -38 M8 0 q 3 -18 8 -28 M14 0 q 1 -20 4 -30"/>
+    </g>
+    <g fill="#6d4a2a"><ellipse cx="-2" cy="-30" rx="1.6" ry="5"/><ellipse cx="16" cy="-26" rx="1.4" ry="4.5"/></g>
+</g>

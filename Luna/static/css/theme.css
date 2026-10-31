@@ -8,16 +8,21 @@
    ============================================================== */
 
 body.day {
+    --sprite-dim: 1;      /* how dark the trees and furniture go after sunset */
     --sky-top:    #1f6fc4;
     --sky-mid:    #6fb7ef;
     --sky-bot:    #cfe9ff;
     --haze:       #ffe6b0;
     --haze-op:    0.55;
+    --wash-op:    1;       /* warm glow around the sun */
 
     --hill-far:   #7fa9c9;
     --hill-mid:   #4f7f5a;
+    --treeline:   #3c6a48;
     --grass-top:  #5fae53;
     --grass-bot:  #2e6b35;
+    --lake-top:   #8fc4e8;
+    --lake-bot:   #2f6f9c;
 
     --star-op:    0;
     --galaxy-op:  0;
@@ -29,16 +34,21 @@ body.day {
 }
 
 body.night {
+    --sprite-dim: 0.5;
     --sky-top:    #060a1c;
     --sky-mid:    #14224a;
     --sky-bot:    #2b3f6e;
     --haze:       #47548c;
     --haze-op:    0.35;
+    --wash-op:    0;
 
     --hill-far:   #2a3559;
     --hill-mid:   #1c3330;
+    --treeline:   #14261f;
     --grass-top:  #1e3c2b;
     --grass-bot:  #10221a;
+    --lake-top:   #26365e;
+    --lake-bot:   #0f1a33;
 
     --star-op:    1;
     --galaxy-op:  0;
@@ -50,20 +60,25 @@ body.night {
 }
 
 body.stargaze {
+    --sprite-dim: 0.32;
     --sky-top:    #02030a;
     --sky-mid:    #070b1d;
     --sky-bot:    #0d1228;
     --haze:       #161d3a;
     --haze-op:    0.30;
+    --wash-op:    0;
 
     --hill-far:   #141b34;
     --hill-mid:   #101d1c;
+    --treeline:   #0a1512;
     --grass-top:  #12241b;
     --grass-bot:  #070f0b;
+    --lake-top:   #141d3a;
+    --lake-bot:   #070b18;
 
     --star-op:    1;
     --galaxy-op:  1;
-    --night-tint: 0.80;
+    --night-tint: 0.88;
 
     --lamp-dim:   0.35;    /* posts sink into the dark so the sky takes over */
     --tag-op:     0.25;    /* labels fade too, still readable up close */

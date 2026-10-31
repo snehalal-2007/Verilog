@@ -1,8 +1,16 @@
-{# interface.html — the overlays: title, status panel, stargaze banner #}
+{# interface.html — the overlays: title, compass, status panel, movement
+   pad, mini map, stargaze banner #}
 
 <div class="hud">
-    <h1>Luna · Stargazing Park</h1>
-    <p id="hint">Click the sun in the corner to bring on the night.</p>
+    <h1>Luna<span class="dot">·</span><span class="sub">Stargazing Park</span></h1>
+    <p id="hint">Click anywhere to open the gate.</p>
+</div>
+
+
+{# which way you are facing: landmarks slide along as you turn (engine.js) #}
+<div class="compass" aria-label="What is ahead of you">
+    <div class="track"></div>
+    <div class="needle"></div>
 </div>
 
 
@@ -11,13 +19,36 @@
     <h2>Park Status</h2>
 
     <div class="row"><span>Sunset</span>            <span class="val no"  id="v-sunset">NO</span></div>
-    <div class="row"><span>Parking lights</span>    <span class="val off" id="v-parking">OFF</span></div>
+    <div class="row"><span>Fountain lights</span>   <span class="val off" id="v-fountain">OFF</span></div>
     <div class="row"><span>Trail lights</span>      <span class="val off" id="v-trail">OFF</span></div>
     <div class="row"><span>Playground lights</span> <span class="val off" id="v-playground">OFF</span></div>
     <div class="row"><span>Stargazing area</span>   <span class="val off" id="v-stargaze">OFF</span></div>
     <div class="row"><span>Ready to stargaze</span> <span class="val no"  id="v-ready">NO</span></div>
 
     <button class="reset" id="reset">RESET TO DAYTIME</button>
+</div>
+
+
+{# hold to move: the keys do the same (W A S D or the arrows) #}
+<div class="pad" aria-label="Move">
+    <button data-dir="forward" aria-label="Walk forward">
+        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M6 14 L12 8 L18 14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button data-dir="left" aria-label="Turn left">
+        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M14 6 L8 12 L14 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button data-dir="back" aria-label="Walk back">
+        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M6 10 L12 16 L18 10" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button data-dir="right" aria-label="Turn right">
+        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M10 6 L16 12 L10 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+</div>
+
+
+{# the park from above, with you on it. engine.js fills it in. #}
+<div class="minimap" aria-label="Map of the park">
+    <svg viewBox="-54 -48 108 118"></svg>
 </div>
 
 
