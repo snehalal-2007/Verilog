@@ -171,15 +171,12 @@ function buildGate() {
         el.items.appendChild(node);
         items.push({ kind: "leaf", node, frame, bars, side, x: side === "left" ? -g.halfGap : g.halfGap, z: g.z });
     });
-    // the arch with the name on it
+    // the arch over the gate
     const node = make("g");
     const arc  = make("path", { fill: "none", stroke: "#1f2329", "stroke-linecap": "round" });
-    const sign = make("rect", { fill: "#1f2329", rx: 2 });
-    const text = make("text", { fill: "#e9d9a8", "text-anchor": "middle", "font-family": "Cormorant Garamond, Georgia, serif", "font-style": "italic", "font-weight": "600" });
-    text.textContent = "Luna Park";
-    node.append(arc, sign, text);
+    node.append(arc);
     el.items.appendChild(node);
-    items.push({ kind: "arch", node, arc, sign, text, x: 0, z: g.z });
+    items.push({ kind: "arch", node, arc, x: 0, z: g.z });
 }
 
 
@@ -296,13 +293,6 @@ function drawArch(it) {
     const ctrl = { x: 2 * apex.x - (a.x + b.x) / 2, y: 2 * apex.y - (a.y + b.y) / 2 };
     it.arc.setAttribute("d", `M${fmt(a.x)} ${fmt(a.y)} Q${fmt(ctrl.x)} ${fmt(ctrl.y)} ${fmt(b.x)} ${fmt(b.y)}`);
     it.arc.setAttribute("stroke-width", Math.max(1, 0.12 * F / m.rz).toFixed(2));
-
-    const centre = project(m.rx, m.rz, g.pillarH + 0.55);
-    const w = 2.6 * F / m.rz, h = 0.6 * F / m.rz;
-    it.sign.setAttribute("x", fmt(centre.x - w / 2)); it.sign.setAttribute("y", fmt(centre.y - h / 2));
-    it.sign.setAttribute("width", fmt(w));           it.sign.setAttribute("height", fmt(h));
-    it.text.setAttribute("x", fmt(centre.x));        it.text.setAttribute("y", fmt(centre.y + h * 0.3));
-    it.text.setAttribute("font-size", fmt(h * 0.7));
 
     it.depth = m.rz;
     return true;

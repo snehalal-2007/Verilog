@@ -1,0 +1,1445 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nox's Night Out</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!--
+  Luna — cartoon prototype.
+  Nox the owl flies around the playground (moves like the snake in Snake),
+  switching off the four lamps. Lost owlets join the line behind Nox.
+  When the sun is down and all four lamps are dark, it's time to stargaze:
+      ready = sunset & ~a & ~b & ~c & ~d      (same rule as stargazing_controller.v)
+  Standalone file: open it straight in a browser. No server needed.
+-->
+<style>
+:root {
+  --ink: #1b1530;
+  --card: #fff6e3;
+  --sun: #ffd23f;
+  --lamp: #ffe066;
+  --coral: #ff7a59;
+  --muted: #6b6385;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; }
+body {
+  font-family: Fredoka, ui-rounded, "Avenir Next", system-ui, sans-serif;
+  color: #fff;
+  background: #2c6e45;
+}
+/* The park fills the whole window; the stats float in the top-right corner */
+.stage { position: fixed; inset: 0; touch-action: none; }
+.stage > canvas#game { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+/* Floating, no panel: the light chips and life owls sit straight on the grass */
+.hud {
+  position: absolute; top: 14px; right: 14px; z-index: 2; max-width: calc(100vw - 28px);
+  display: flex; flex-direction: column; align-items: flex-end; gap: 10px;
+  pointer-events: none;
+}
+.hint {
+  position: absolute; left: 16px; bottom: 14px; z-index: 2;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px;
+  font-size: 13px; font-weight: 600; text-shadow: 0 1px 3px rgba(0, 0, 0, .7);
+}
+.hint kbd { font-size: 12px; min-width: 20px; margin-right: 2px; text-shadow: none; }
+.hint .pill { padding: 2px 10px; font-size: 13px; text-shadow: none; }
+.lives { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px; align-items: center; min-height: 28px; filter: drop-shadow(0 3px 0 rgba(27, 21, 48, .9)); }
+.lives svg { display: block; }
+.pill {
+  background: var(--card); color: var(--ink);
+  border: 3px solid var(--ink); border-radius: 999px;
+  padding: 3px 12px; font-weight: 600; font-size: 15px;
+  box-shadow: 0 3px 0 var(--ink);
+  display: flex; align-items: center; gap: 6px;
+}
+.pill b { font-weight: 700; }
+.pill.btnpill { cursor: pointer; font: inherit; font-weight: 600; font-size: 15px; justify-content: center; }
+
+.lamps { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.chip {
+  display: flex; align-items: center; gap: 8px;
+  background: #2a2550; border: 3px solid var(--ink); border-radius: 14px;
+  padding: 4px 10px; font-weight: 600; font-size: 14px;
+  box-shadow: 0 3px 0 var(--ink); transition: background .3s, color .3s;
+  min-width: 0;
+}
+.chip span.name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chip .bulb { flex: none; width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--ink); background: #4a4560; transition: all .3s; }
+.chip .letter { flex: none; font-family: ui-monospace, Menlo, monospace; font-size: 12px; opacity: .7; }
+.chip.on { background: #fff1b8; color: var(--ink); }
+.chip:not(.on) { background: rgba(42, 37, 80, .92); }
+.chip.on .bulb { background: var(--lamp); box-shadow: 0 0 12px 3px rgba(255, 224, 102, .85); }
+.chip.warn .bulb { animation: blink .25s steps(2) infinite; }
+@keyframes blink { 50% { background: var(--lamp); } }
+
+.overlay {
+  position: absolute; inset: 0; z-index: 5; display: flex; align-items: center; justify-content: center;
+  background: rgba(12, 10, 35, .45); padding: 16px;
+}
+.overlay[hidden] { display: none; }
+.overlay.clear { background: transparent; align-items: flex-start; padding-top: 6%; }
+.card {
+  background: var(--card); color: var(--ink);
+  border: 4px solid var(--ink); border-radius: 22px; box-shadow: 0 8px 0 var(--ink);
+  padding: 18px 24px 20px; max-width: 440px; width: 100%; text-align: center;
+  animation: pop .35s cubic-bezier(.3, 1.6, .5, 1);
+}
+@keyframes pop { from { transform: scale(.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.card h2 { margin: 2px 0 6px; font-size: 30px; line-height: 1.1; }
+.card p { margin: 6px 0; font-size: 15px; line-height: 1.45; color: #3b3355; }
+.card canvas.mascot { width: 120px; height: 120px; display: block; margin: -4px auto 0; }
+.rule {
+  display: inline-block; margin-top: 6px; padding: 4px 10px; border-radius: 10px;
+  background: #1b1530; color: #9ef0b0; font-family: ui-monospace, Menlo, monospace; font-size: 13px;
+}
+.how { display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; text-align: left; margin: 10px 0 2px; font-size: 14px; color: #3b3355; align-items: center; }
+kbd {
+  display: inline-block; min-width: 24px; padding: 1px 6px; border: 2px solid var(--ink); border-bottom-width: 4px;
+  border-radius: 7px; background: #fff; font-family: inherit; font-weight: 600; font-size: 13px; text-align: center; color: var(--ink);
+}
+.btn {
+  font: inherit; font-weight: 700; font-size: 18px;
+  background: var(--sun); color: var(--ink);
+  border: 3px solid var(--ink); border-radius: 14px; padding: 10px 22px;
+  box-shadow: 0 4px 0 var(--ink); cursor: pointer; margin: 12px 4px 0;
+}
+.btn:hover { filter: brightness(1.05); }
+.btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+.btn.alt { background: #fff; }
+.tally { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0 2px; }
+.tally div { background: #fff; border: 3px solid var(--ink); border-radius: 12px; padding: 6px 4px; }
+.tally b { display: block; font-size: 22px; }
+.tally span { font-size: 12px; color: var(--muted); }
+#nextFloat { position: absolute; right: 18px; bottom: 18px; margin: 0; z-index: 4; }
+#nextFloat[hidden] { display: none; }
+
+.help { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; align-items: center; }
+.help kbd { font-size: 12px; min-width: 20px; margin-right: 2px; }
+.help .pill { padding: 2px 10px; font-size: 13px; }
+
+.pad { position: absolute; z-index: 3; bottom: 16px; left: 50%; transform: translateX(-50%); display: none; grid-template-columns: repeat(3, 64px); grid-template-rows: repeat(2, 56px); gap: 8px; justify-content: center; }
+.pad button {
+  font: inherit; font-size: 22px; font-weight: 700; color: var(--ink); background: var(--card);
+  border: 3px solid var(--ink); border-radius: 14px; box-shadow: 0 4px 0 var(--ink); touch-action: manipulation;
+}
+.pad button:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+.pad .up { grid-column: 2; grid-row: 1; }
+.pad .left { grid-column: 1; grid-row: 2; }
+.pad .down { grid-column: 2; grid-row: 2; }
+.pad .right { grid-column: 3; grid-row: 2; }
+@media (pointer: coarse) { .pad { display: grid; } }
+@media (max-width: 640px) {
+  .card h2 { font-size: 24px; }
+}
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+  <canvas id="game" aria-label="The playground at night"></canvas>
+
+  <div class="hud" id="hud">
+    <div class="lamps" id="lampChips" aria-label="Lights"></div>
+    <div class="lives" id="lives" aria-label="Lives"></div>
+  </div>
+
+  <div class="hint">
+    <span><kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd> steer</span>
+    <span><kbd>Space</kbd> stop</span>
+    <span><kbd>Space</kbd>×2 pause</span>
+    <button class="pill btnpill" id="mute" aria-label="Toggle sound">Sound on</button>
+  </div>
+
+  <div class="overlay" id="ovTitle">
+      <div class="card">
+        <canvas class="mascot" id="mascot" width="240" height="240" aria-hidden="true"></canvas>
+        <h2>Meet Nox</h2>
+        <p>Nox wants to see the stars tonight, but the park lamps are far too bright. Fly to each lamp to switch it off.</p>
+        <div class="how">
+          <span><kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd></span><span>Steer Nox</span>
+          <span>Lamps</span><span>Fly into a lit lamp to switch it off</span>
+          <span>Owlets</span><span>Each lost owlet you pick up is an extra life. They follow Nox in a line</span>
+          <span><kbd>Space</kbd></span><span>Stop and hover. Tap <kbd>Space</kbd> twice quickly to pause</span>
+          <span>Bumps</span><span>A bump costs a life, but Nox stays put. You start with 3. Lose them all and the game starts over</span>
+        </div>
+        <div><button class="btn" id="btnStart">Start the night</button></div>
+      </div>
+    </div>
+
+    <div class="overlay" id="ovPause" hidden>
+      <div class="card">
+        <h2>Paused</h2>
+        <p>Nox is hovering patiently.</p>
+        <button class="btn" id="btnResume">Keep flying</button>
+      </div>
+    </div>
+
+    <div class="overlay clear" id="ovWin" hidden>
+      <div class="card">
+        <h2>It's time to stargaze!</h2>
+        <p>The sun is down and every lamp is dark. The hardware says <b>ready = 1</b>.</p>
+        <div class="tally">
+          <div><b id="wOwlets">0</b><span>owlets rescued</span></div>
+          <div><b id="wTime">0s</b><span>night time</span></div>
+          <div><b id="wBonus">0</b><span>bonus</span></div>
+        </div>
+        <button class="btn alt" id="btnLook">Just look up</button>
+        <button class="btn" id="btnNext">Next night</button>
+      </div>
+    </div>
+
+    <button class="btn" id="nextFloat" hidden>Next night →</button>
+
+  <div class="pad" id="pad">
+    <button class="up" data-dir="up" aria-label="Up">▲</button>
+    <button class="left" data-dir="left" aria-label="Left">◀</button>
+    <button class="down" data-dir="down" aria-label="Down">▼</button>
+    <button class="right" data-dir="right" aria-label="Right">▶</button>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+/* ================================================================
+   Setup
+   ================================================================ */
+const C = 40;                                   // one map cell, in drawing units
+let COLS = 26, ROWS = 15, W = COLS * C, H = ROWS * C;   // set from the window size in chooseGridSize()
+const INK = "#1b1530";
+const TAU = Math.PI * 2;
+const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+const dark = document.createElement("canvas");
+const dctx = dark.getContext("2d");
+const bg = document.createElement("canvas");
+const bctx = bg.getContext("2d");
+let DPR = 1;
+
+// The park is drawn in map units (40 per cell) and scaled to cover the whole
+// window, like CSS "object-fit: cover". The grid itself is sized to the
+// window's shape, so very little is ever cropped.
+let VIEW = { s: 1, ox: 0, oy: 0, dpr: 1 };
+function sizeCanvases() {
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  const s = Math.max(vw / W, vh / H);
+  VIEW = { s, dpr, ox: (vw - W * s) / 2, oy: (vh - H * s) / 2 };
+  canvas.width = Math.round(vw * dpr); canvas.height = Math.round(vh * dpr);
+  DPR = s * dpr;
+  for (const [cv, g] of [[dark, dctx], [bg, bctx]]) {
+    cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+    g.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+  buildBackground();
+}
+
+/* tiny seeded random so the grass looks the same every load */
+function rng(seed) {
+  return () => {
+    seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+    let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+/* ---------- drawing helpers ---------- */
+function rr(g, x, y, w, h, r) {
+  g.beginPath();
+  g.moveTo(x + r, y);
+  g.arcTo(x + w, y, x + w, y + h, r);
+  g.arcTo(x + w, y + h, x, y + h, r);
+  g.arcTo(x, y + h, x, y, r);
+  g.arcTo(x, y, x + w, y, r);
+  g.closePath();
+}
+function ell(g, x, y, rx, ry, rot = 0) { g.beginPath(); g.ellipse(x, y, rx, ry, rot, 0, TAU); }
+function circ(g, x, y, r) { g.beginPath(); g.arc(x, y, r, 0, TAU); }
+function paint(g, fill, stroke = INK, lw = 2.5) {
+  if (fill) { g.fillStyle = fill; g.fill(); }
+  if (stroke) { g.strokeStyle = stroke; g.lineWidth = lw; g.stroke(); }
+}
+function shadow(g, x, y, rx, ry) { ell(g, x, y, rx, ry); g.fillStyle = "rgba(10,10,30,.28)"; g.fill(); }
+
+/* ================================================================
+   The park layout
+   Built to fit the window. A winding path runs from the gate to a round
+   fountain plaza, then branches to the stargazing deck (top left), the
+   playground (bottom left) and a trail round the pond (right). Trees are
+   scattered with a fixed seed, so the park is the same on every load.
+
+   grid cells: '.' grass  'P' path  'D' deck  'H' hedge  '#' blocked
+   ================================================================ */
+let grid = [], objects = [], pathLines = [], tallGrass = [], plaza = null;
+let reachable = new Set();
+let hudZone = { x0: COLS, y1: -1 };
+
+/* The four lamps are the four inputs of the Verilog module. */
+const LAMPS = [
+  { id: "a", name: "Fountain" },
+  { id: "b", name: "Trail" },
+  { id: "c", name: "Playground" },
+  { id: "d", name: "Stargazing" },
+].map(l => ({ ...l, x: 0, y: 0, on: false, changedAt: -9 }));
+const lampById = id => LAMPS.find(l => l.id === id);
+
+const START = { x: 0, y: 0 };
+const GATE = { x: 0, y: 0 };
+
+function chooseGridSize() {
+  const vw = window.innerWidth, vh = window.innerHeight;
+  ROWS = Math.max(12, Math.min(18, Math.round(vh / 52)));
+  COLS = Math.max(20, Math.min(40, Math.round(ROWS * vw / vh)));
+  W = COLS * C; H = ROWS * C;
+}
+
+/* how many cells the stats panel covers in the top-right corner */
+function hudCells() {
+  const box = document.getElementById("hud").getBoundingClientRect();
+  const cell = C * Math.max(window.innerWidth / W, window.innerHeight / H);
+  return {
+    cols: Math.min(Math.floor(COLS / 2) - 3, Math.ceil((box.width + 14) / cell)),
+    rows: Math.min(Math.floor(ROWS / 2) - 1, Math.ceil((box.height + 14) / cell)),
+  };
+}
+
+function buildLayout() {
+  chooseGridSize();
+  for (let seed = 11; seed < 60; seed++) if (tryLayout(seed)) return;
+  // Last resort for very odd window shapes: the standard 26 x 15 park.
+  COLS = 26; ROWS = 15; W = COLS * C; H = ROWS * C;
+  for (let seed = 11; seed < 60; seed++) if (tryLayout(seed)) return;
+}
+
+/* The path layout follows the hand-drawn sketch: square loops one cell
+   wide. Each column / row below is a fraction of the park's width / height,
+   so the same picture stretches to fit any window. */
+const PATH_COLS = { A: .099, B: .25, C: .409, D: .489, E: .657, F: .79, G: .938 };
+const PATH_ROWS = { r1: .112, r2: .181, r3: .352, r4: .504, r5: .612, r6: .747, r7: .798, end: 1 };
+const PATH_SEGMENTS = [
+  // top-left loop (a lamp sits inside it)
+  ["v", "A", "r1", "r3"], ["h", "r1", "A", "B"], ["v", "B", "r1", "r3"], ["h", "r3", "A", "B"],
+  // the long top bar, and the big empty loop at the top right
+  ["h", "r3", "B", "F"], ["v", "C", "r2", "r3"], ["h", "r2", "C", "F"], ["v", "F", "r2", "r3"],
+  // middle loop round the pond
+  ["v", "B", "r3", "r6"], ["h", "r6", "B", "D"],
+  // the main path, from the entrance at the bottom up to the top bar
+  ["v", "D", "r3", "end"],
+  // small loop round the centre lamp
+  ["v", "E", "r3", "r5"], ["h", "r5", "D", "E"],
+  // right loop round the fountain and its lamp
+  ["h", "r4", "E", "G"], ["v", "G", "r4", "r7"], ["h", "r7", "D", "G"],
+];
+
+function tryLayout(seed) {
+  const r = rng(seed);
+  grid = Array.from({ length: ROWS }, () => Array(COLS).fill("."));
+  objects = []; pathLines = []; tallGrass = []; plaza = null;
+  const free = (x, y) => x > 0 && y > 0 && x < COLS - 1 && y < ROWS - 1 && grid[y][x] === ".";
+  const fillCells = (x, y, w, h, ch) => { for (let j = y; j < y + h; j++) for (let i = x; i < x + w; i++) grid[j][i] = ch; };
+  const put = (type, x, y, w = 1, h = 1, ch = "#") => { objects.push({ type, x, y, w, h }); fillCells(x, y, w, h, ch); };
+  const fits = (x, y, w, h) => { for (let j = y; j < y + h; j++) for (let i = x; i < x + w; i++) if (!free(i, j)) return false; return true; };
+  // The sketch's fractions are stretched outward so the paths spread across
+  // more of the screen (same one-cell width, just more room between them).
+  const sx = f => .035 + (f - .099) / (.938 - .099) * (.965 - .035);
+  const sy = f => f >= 1 ? 1 : .09 + (f - .112) / (.798 - .112) * (.9 - .09);
+  const X = f => Math.round(sx(f) * (COLS - 1)), Y = f => Math.round(sy(f) * (ROWS - 1));
+  const inner = (v, n) => Math.max(1, Math.min(n - 2, v));
+
+  for (let i = 0; i < COLS; i++) { grid[0][i] = "H"; grid[ROWS - 1][i] = "H"; }
+  for (let j = 0; j < ROWS; j++) { grid[j][0] = "H"; grid[j][COLS - 1] = "H"; }
+
+  const hud = hudCells();
+  hudZone = { x0: COLS - 1 - hud.cols, y1: hud.rows };   // owlets never spawn under the floating stats
+
+  /* ---- paths ---- */
+  // The right loop's top bar (r4) sits one square higher than the sketch,
+  // so the wooden deck below it gets a row of grass above as well as below.
+  const rowAt = name => {
+    const y = inner(Y(PATH_ROWS[name]), ROWS);
+    if (name === "r4" && y - 1 > inner(Y(PATH_ROWS.r3), ROWS) + 1) return y - 1;
+    return y;
+  };
+  for (const [dir, a, b, c] of PATH_SEGMENTS) {
+    if (dir === "v") {
+      const x = inner(X(PATH_COLS[a]), COLS);
+      const y0 = rowAt(b), y1 = rowAt(c);
+      for (let y = Math.min(y0, y1); y <= Math.max(y0, y1); y++) if (free(x, y)) grid[y][x] = "P";
+    } else {
+      const y = rowAt(a);
+      const x0 = inner(X(PATH_COLS[b]), COLS), x1 = inner(X(PATH_COLS[c]), COLS);
+      for (let x = Math.min(x0, x1); x <= Math.max(x0, x1); x++) if (free(x, y)) grid[y][x] = "P";
+    }
+  }
+  GATE.x = inner(X(PATH_COLS.D), COLS); GATE.y = ROWS - 1;
+  START.x = GATE.x; START.y = ROWS - 2;
+
+  /* ---- pieces, each placed as close as it fits to where the sketch has it ---- */
+  const OFFS = [];
+  for (let d = 0; d <= 3; d++) for (let dy = -d; dy <= d; dy++) for (let dx = -d; dx <= d; dx++) if (Math.max(Math.abs(dx), Math.abs(dy)) === d) OFFS.push([dx, dy]);
+  // clear = a ring of grass at least one cell wide all round (no path touching it)
+  const clearOfPath = (x, y, w, h) => {
+    for (let j = y - 1; j <= y + h; j++) for (let i = x - 1; i <= x + w; i++)
+      if (grid[j] && grid[j][i] === "P") return false;
+    return true;
+  };
+  const spot = (fx, fy, w, h, clear = false) => {
+    const x0 = Math.round(sx(fx) * (COLS - 1) - (w - 1) / 2), y0 = Math.round(sy(fy) * (ROWS - 1) - (h - 1) / 2);
+    for (const [dx, dy] of OFFS) {
+      const x = x0 + dx, y = y0 + dy;
+      if (fits(x, y, w, h) && (!clear || clearOfPath(x, y, w, h))) return { x, y };
+    }
+    return null;
+  };
+  const near = (type, fx, fy, w = 1, h = 1, clear = false) => { const p = spot(fx, fy, w, h, clear); if (p) put(type, p.x, p.y, w, h); return p; };
+
+  // The pond is 6 cells wide, in the middle loop. It keeps a full cell of grass
+  // round it when the loop is wide enough; otherwise it shrinks only as much as
+  // it has to (and the water is drawn inset, so it never touches the path).
+  const ph = Math.max(2, Math.min(4, Math.round(ROWS * .2)));
+  let pondPlaced = false;
+  for (const [w, clear] of [[6, true], [6, false], [5, false], [4, false], [3, false], [2, false]]) {
+    if (near("pond", .375, .57, w, ph, clear) || near("pond", .375, .57, w, 2, clear)) { pondPlaced = true; break; }
+  }
+  if (!pondPlaced) return false;
+  // then trim one column off its right side (left edge stays where it is)
+  const pond = objects.find(o => o.type === "pond");
+  if (pond.w > 2) {
+    for (let j = pond.y; j < pond.y + pond.h; j++) grid[j][pond.x + pond.w - 1] = ".";
+    pond.w -= 1;
+  }
+  // the fountain sits in the centre square (the small loop in the middle)
+  if (!near("fountain", .573, .482, 2, 2)) return false;
+
+  // the wooden stargazing deck fills the right loop, with the telescope on it
+  // (it keeps clear of the path when there is room, so grass shows round it)
+  let deck = null;
+  for (const [w, h, clear] of [[5, 3, true], [4, 3, true], [5, 2, true], [4, 2, true], [5, 3, false], [4, 3, false], [4, 2, false], [3, 2, false]]) {
+    const p = spot(.8, .65, w, h, clear);
+    if (p) { deck = { ...p, w, h }; put("deck", p.x, p.y, w, h, "D"); break; }
+  }
+  if (!deck) return false;
+  // telescope: second column from the right, second row down
+  const tx = deck.x + deck.w - 2, ty = deck.y + Math.min(1, deck.h - 1);
+  put("telescope", tx, ty);
+
+  // lamps: Fountain beside the fountain, Stargazing on the deck,
+  // Trail in the top-left loop, Playground bottom left
+  Object.assign(lampById("d"), { x: tx === deck.x + 1 ? deck.x : deck.x + 1, y: deck.y + 1 });
+  const lampSpots = { a: [.62, .46], b: [.17, .18], c: [.17, .84] };
+  for (const [id, [fx, fy]] of Object.entries(lampSpots)) {
+    const p = spot(fx, fy, 1, 1);
+    if (!p) return false;
+    Object.assign(lampById(id), p);
+  }
+  const lampCell = (x, y) => LAMPS.some(l => l.x === x && l.y === y);
+  const nearLamp = (x, y) => LAMPS.some(l => Math.abs(l.x - x) + Math.abs(l.y - y) <= 1);
+
+  for (const [fx, fy] of [[.9, .155], [.074, .55]]) { const p = spot(fx, fy, 1, 1); if (p && !nearLamp(p.x, p.y)) put("bench", p.x, p.y); }
+  for (const [fx, fy] of [[.32, .2], [.857, .37], [.06, .845]]) { const p = spot(fx, fy, 1, 1); if (p && !nearLamp(p.x, p.y)) put("tree", p.x, p.y); }
+
+  /* ---- a few more trees and tall grass in the open spaces ---- */
+  for (let y = 1; y < ROWS - 1; y++) for (let x = 1; x < COLS - 1; x++) {
+    if (!free(x, y) || nearLamp(x, y) || lampCell(x, y)) continue;
+    if (x >= hudZone.x0 && y <= hudZone.y1) continue;               // keep the corner under the stats clear
+    if (Math.abs(x - START.x) <= 1 && y >= ROWS - 3) continue;      // keep the entrance clear
+    const roll = r();
+    if (roll < .045) put(r() < .75 ? "tree" : "bush", x, y);
+    else if (roll < .13) tallGrass.push({ x, y, s: r() });
+  }
+
+  /* ---- every lamp must be reachable from the entrance ---- */
+  reachable = new Set();
+  const todo = [[START.x, START.y]];
+  reachable.add(START.x + "," + START.y);
+  while (todo.length) {
+    const [x, y] = todo.pop();
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const nx = x + dx, ny = y + dy, key = nx + "," + ny;
+      if (!reachable.has(key) && walkable(nx, ny)) { reachable.add(key); todo.push([nx, ny]); }
+    }
+  }
+  return LAMPS.every(l => reachable.has(l.x + "," + l.y));
+}
+
+buildLayout();
+
+function walkable(x, y) {
+  if (x < 0 || y < 0 || x >= COLS || y >= ROWS) return false;
+  const t = grid[y][x];
+  return t !== "H" && t !== "#";
+}
+
+/* ================================================================
+   The rule. Prototype only: this mirrors the Breadboard module in
+   stargazing_controller.v. In the real app the answer comes from the
+   Verilog through POST /simulate, never from JavaScript.
+   ================================================================ */
+function breadboard(sunset, a, b, c, d) {
+  return sunset & ~a & ~b & ~c & ~d & 1;
+}
+
+/* ================================================================
+   Game state
+   ================================================================ */
+const DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
+let state = "title";           // title | intro | ready | play | stopped | paused | crash | restart | win
+let pausedFrom = "play";
+let level = 1, score = 0, owlets = 0, lives = 3;
+let best = 0;
+try { best = Number(localStorage.getItem("nox-best")) || 0; } catch (e) {}
+let sunset = 0;
+let snake = [{ ...START }], prevSnake = [{ ...START }];
+let dir = "up", queue = [];
+let pickup = null;
+let acc = 0, T = 0, phaseT = 0, nightTime = 0;
+let crashAt = null, shake = 0;
+let relightClock = 0, warnLamp = null, lastWarnBeep = 0;
+let winBonus = 0, winCardShown = false;
+const particles = [], texts = [];
+
+// Milliseconds per step: bigger = slower. Night 1 is gentle; each night gets a little quicker.
+const tickMs = () => Math.max(160, 300 - (level - 1) * 20);
+const relightEvery = () => Math.max(7, 15 - level);
+
+/* ================================================================
+   Sound (tiny Web Audio blips, created on first use)
+   ================================================================ */
+let actx = null, muted = false;
+function tone(f, d = .12, type = "square", vol = .05, slide = 0) {
+  if (muted) return;
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    const o = actx.createOscillator(), g = actx.createGain(), t0 = actx.currentTime;
+    o.type = type; o.frequency.setValueAtTime(f, t0);
+    if (slide) o.frequency.exponentialRampToValueAtTime(slide, t0 + d);
+    g.gain.setValueAtTime(vol, t0); g.gain.exponentialRampToValueAtTime(.0001, t0 + d);
+    o.connect(g).connect(actx.destination); o.start(t0); o.stop(t0 + d + .02);
+  } catch (e) {}
+}
+const sfx = {
+  lampOn()  { tone(520, .07, "triangle", .04, 700); },
+  lampOff() { tone(700, .1, "square", .04, 180); },
+  owlet()   { tone(880, .07, "triangle", .07); setTimeout(() => tone(1175, .1, "triangle", .07), 70); },
+  crash()   { tone(170, .35, "sawtooth", .06, 55); },
+  warn()    { tone(320, .05, "square", .025); },
+  hoot()    { tone(430, .18, "sine", .09, 340); setTimeout(() => tone(430, .28, "sine", .09, 300), 230); },
+  win()     { [523, 659, 784, 1047, 1319].forEach((f, i) => setTimeout(() => tone(f, .22, "triangle", .07), i * 110)); },
+};
+
+/* ================================================================
+   Flow
+   ================================================================ */
+function newGame() {
+  level = 1; score = 0; lives = 3;
+  newNight();
+}
+
+function newNight() {
+  LAMPS.forEach(l => { l.on = false; l.changedAt = -9; });
+  sunset = 0;
+  owlets = 0;
+  resetOwl();
+  spawnPickup();
+  nightTime = 0; relightClock = 0; warnLamp = null;
+  winCardShown = false;
+  state = "intro"; phaseT = 0;
+  hideOverlays();
+  updateHUD();
+}
+
+function resetOwl() {
+  snake = [{ ...START }]; prevSnake = [{ ...START }];
+  dir = "up"; queue = []; acc = 0;
+}
+
+function spawnPickup() {
+  // measure the floating stats now (fonts may have loaded since the layout was built)
+  const hud = hudCells();
+  hudZone = { x0: Math.min(hudZone.x0, COLS - 1 - hud.cols), y1: Math.max(hudZone.y1, hud.rows) };
+  const free = [];
+  for (let y = 1; y < ROWS - 1; y++) for (let x = 1; x < COLS - 1; x++) {
+    if (!walkable(x, y) || !reachable.has(x + "," + y)) continue;
+    if (x >= hudZone.x0 && y <= hudZone.y1) continue;
+    if (LAMPS.some(l => l.x === x && l.y === y)) continue;
+    if (snake.some(s => s.x === x && s.y === y)) continue;
+    if (Math.abs(x - snake[0].x) + Math.abs(y - snake[0].y) < 4) continue;
+    if (x === START.x && y >= START.y - 1) continue;
+    free.push({ x, y });
+  }
+  pickup = free.length ? { ...free[Math.floor(Math.random() * free.length)], born: T } : null;
+}
+
+function steer(d) {
+  if (state === "ready" || state === "stopped") { settle(); state = "play"; dir = d; queue = []; return; }
+  if (state !== "play") return;
+  const lastDir = queue.length ? queue[queue.length - 1] : dir;
+  if (d === lastDir) return;
+  const [dx, dy] = DIRS[d], [lx, ly] = DIRS[lastDir];
+  if (dx === -lx && dy === -ly && snake.length > 1) return;   // no flying back into your owlets
+  if (queue.length < 2) queue.push(d);
+}
+
+function tick() {
+  if (queue.length) dir = queue.shift();
+  const [dx, dy] = DIRS[dir];
+  const head = snake[0];
+  const nx = head.x + dx, ny = head.y + dy;
+  const grow = pickup && pickup.x === nx && pickup.y === ny;
+  // Only the scenery stops Nox. The owlets hop out of the way.
+  if (!walkable(nx, ny)) { bump(nx, ny); return; }
+
+  const old = snake.map(s => ({ ...s }));
+  snake.unshift({ x: nx, y: ny });
+  if (grow) {
+    prevSnake = [...old, { ...old[old.length - 1] }];
+    owlets++;
+    lives++;                                   // every owlet is an extra life
+    const pts = 10 * level;
+    score += pts;
+    sfx.owlet();
+    floatText(nx, ny, "+1 life! +" + pts, "#c3bbef");
+    burst(cx(nx), cy(ny), ["#c3bbef", "#fff", "#ffe066"], 14, 2.2);
+    spawnPickup();
+  } else {
+    snake.pop();
+    prevSnake = old;
+  }
+
+  const lamp = LAMPS.find(l => l.on && l.x === nx && l.y === ny);
+  if (lamp) switchOff(lamp);
+  updateHUD();
+}
+
+function switchOff(lamp) {
+  lamp.on = false; lamp.changedAt = T;
+  const pts = 50 * level;
+  score += pts;
+  relightClock = 0; warnLamp = null;
+  sfx.lampOff();
+  floatText(lamp.x, lamp.y, lamp.id.toUpperCase() + " off! +" + pts, "#ffe066");
+  puff(cx(lamp.x), cy(lamp.y) - 18);
+  checkVerdict();
+}
+
+function checkVerdict() {
+  const ready = breadboard(sunset, ...LAMPS.map(l => l.on ? 1 : 0));
+  updateHUD();
+  if (ready) startWin();
+}
+
+/* A bump is not a failure: Nox stays where it is, gets a little dizzy,
+   then hovers until you choose a new direction. Nothing resets. */
+function bump(nx, ny) {
+  state = "crash"; phaseT = 0;
+  crashAt = { x: snake[0].x, y: snake[0].y, tx: nx, ty: ny };
+  queue = []; acc = 0;
+  if (!reduceMotion) shake = 6;
+  sfx.crash();
+  lives--;
+  // the last owlet in the line flies home with the lost life
+  if (owlets > 0 && snake.length > 1) {
+    const gone = snake.pop();
+    owlets--;
+    burst(cx(gone.x), cy(gone.y), ["#c3bbef", "#fff"], 12, 2);
+  }
+  prevSnake = snake.map(s => ({ ...s }));
+  floatText(snake[0].x, snake[0].y, lives > 0 ? "Bonk! -1 life" : "Out of lives!", "#ff7a59");
+  if (lives <= 0) { state = "restart"; phaseT = 0; saveBest(); }
+  updateHUD();
+}
+
+function startWin() {
+  state = "win"; phaseT = 0;
+  const secs = Math.round(nightTime);
+  winBonus = 100 * level + Math.max(0, 60 - secs) * 5 + owlets * 15;
+  score += winBonus;
+  saveBest();
+  sfx.win();
+  setTimeout(sfx.hoot, 900);
+  document.getElementById("wOwlets").textContent = owlets;
+  document.getElementById("wTime").textContent = secs + "s";
+  document.getElementById("wBonus").textContent = "+" + winBonus;
+  updateHUD();
+}
+
+function saveBest() {
+  if (score > best) {
+    best = score;
+    try { localStorage.setItem("nox-best", String(best)); } catch (e) {}
+  }
+}
+
+/* Park Nox exactly on its current square. Movement is drawn by sliding from
+   the previous square to the current one, so without this, flying on after a
+   stop or pause would first jump back a square. */
+function settle() {
+  prevSnake = snake.map(s => ({ ...s }));
+  acc = 0;
+}
+
+function togglePause() {
+  if (state === "play" || state === "ready" || state === "stopped") { settle(); pausedFrom = state; state = "paused"; show("ovPause"); }
+  else if (state === "paused") { state = pausedFrom; hideOverlays(); }
+}
+
+/* ================================================================
+   Update
+   ================================================================ */
+function update(dt) {
+  T += dt;
+  phaseT += dt;
+  shake = Math.max(0, shake - dt * 40);
+
+  if (state === "intro") {
+    // the sun sets, then the lamps come on one by one
+    if (phaseT > .3 && !sunset) sunset = 1;
+    LAMPS.forEach((l, i) => {
+      if (!l.on && phaseT > .6 + i * .3) { l.on = true; l.changedAt = T; sfx.lampOn(); updateHUD(); }
+    });
+    if (phaseT > 2.1) { state = "ready"; phaseT = 0; }
+  }
+
+  if (state === "play") {
+    nightTime += dt;
+    acc += dt * 1000;
+    while (acc >= tickMs()) {
+      acc -= tickMs();
+      tick();
+      if (state !== "play") { acc = 0; break; }
+    }
+    // From night 2 the park keeper switches a dark lamp back on if you dawdle.
+    if (state === "play" && level >= 2) {
+      const off = LAMPS.filter(l => !l.on);
+      if (off.length && off.length < 4) {
+        relightClock += dt;
+        if (!warnLamp && relightClock > relightEvery() - 2.2) {
+          warnLamp = off[Math.floor(Math.random() * off.length)];
+          updateHUD();
+        }
+        if (warnLamp && T - lastWarnBeep > .5) { sfx.warn(); lastWarnBeep = T; }
+        if (warnLamp && relightClock >= relightEvery()) {
+          warnLamp.on = true; warnLamp.changedAt = T;
+          floatText(warnLamp.x, warnLamp.y, "Keeper switched " + warnLamp.id.toUpperCase() + " back on!", "#ff7a59");
+          sfx.lampOn();
+          warnLamp = null; relightClock = 0;
+          updateHUD();
+        }
+      }
+    }
+  }
+
+  if (state === "crash" && phaseT > .7) { state = "stopped"; phaseT = 0; }
+  if (state === "restart" && phaseT > 2.4) newGame();   // out of lives: start again from Night 1
+
+  if (state === "win" && phaseT > 1.8 && !winCardShown) {
+    winCardShown = true;
+    show("ovWin");
+  }
+
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.life -= dt; p.x += p.vx * dt * 60; p.y += p.vy * dt * 60; p.vy += p.g * dt * 60; p.vx *= .97;
+    if (p.life <= 0) particles.splice(i, 1);
+  }
+  for (let i = texts.length - 1; i >= 0; i--) {
+    texts[i].life -= dt; texts[i].y -= dt * 28;
+    if (texts[i].life <= 0) texts.splice(i, 1);
+  }
+}
+
+/* ---------- effects ---------- */
+const cx = x => (x + .5) * C;
+const cy = y => (y + .5) * C;
+function burst(x, y, colors, n, speed) {
+  for (let i = 0; i < n; i++) {
+    const a = Math.random() * TAU, s = speed * (.4 + Math.random());
+    particles.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 1, g: .06, life: .6 + Math.random() * .4, max: 1, r: 2 + Math.random() * 2.5, color: colors[i % colors.length], kind: "spark" });
+  }
+}
+function puff(x, y) {
+  for (let i = 0; i < 9; i++) {
+    const a = -Math.PI / 2 + (Math.random() - .5) * 1.6;
+    particles.push({ x, y, vx: Math.cos(a) * .7, vy: Math.sin(a) * .9, g: -.004, life: 1 + Math.random() * .5, max: 1.5, r: 5 + Math.random() * 5, color: "#d8d4ea", kind: "puff" });
+  }
+  burst(x, y, ["#ffe066", "#fff"], 10, 2.4);
+}
+function floatText(x, y, text, color) { texts.push({ x: cx(x), y: cy(y) - 26, text, color, life: 1.3 }); }
+
+/* ================================================================
+   Characters
+   ================================================================ */
+function drawOwl(g, x, y, s, o = {}) {
+  const t = o.t || 0, look = o.look || { x: 0, y: 0 };
+  const flap = o.still ? 0 : (Math.sin(t * 16) * .5 + .5);
+  const blink = !o.dizzy && ((t + 1.5) % 3.7) < .12;
+  g.save(); g.translate(x, y); g.scale(s, s);
+  g.lineJoin = "round"; g.lineCap = "round";
+
+  if (!o.noShadow) shadow(g, 0, 19, 13, 4);
+
+  // wings
+  for (const side of [-1, 1]) {
+    g.save(); g.translate(side * 12, -2); g.rotate(side * (.25 + flap * .55));
+    ell(g, side * 2, 7, 6, 11); paint(g, "#9a5a2c");
+    g.restore();
+  }
+  // ear tufts
+  for (const side of [-1, 1]) {
+    g.beginPath(); g.moveTo(side * 5, -12); g.lineTo(side * 13, -21); g.lineTo(side * 12, -9); g.closePath();
+    paint(g, "#b8692f");
+  }
+  // body
+  ell(g, 0, 2, 14, 16); paint(g, "#c97c3c");
+  // belly
+  ell(g, 0, 8, 9, 9); paint(g, "#f6dcaa", null);
+  g.strokeStyle = "#d9a56a"; g.lineWidth = 1.6;
+  for (const [vx, vy] of [[-3.5, 5], [3.5, 5], [0, 9], [-4, 12], [4, 12]]) {
+    g.beginPath(); g.moveTo(vx - 1.8, vy - 1); g.lineTo(vx, vy + .8); g.lineTo(vx + 1.8, vy - 1); g.stroke();
+  }
+  // face discs
+  for (const side of [-1, 1]) { circ(g, side * 6.3, -4, 7.6); paint(g, "#fbecc9", INK, 2); }
+  // eyes
+  for (const side of [-1, 1]) {
+    const ex = side * 6.3, ey = -4;
+    if (o.dizzy) {
+      g.strokeStyle = INK; g.lineWidth = 2;
+      g.beginPath(); g.moveTo(ex - 3, ey - 3); g.lineTo(ex + 3, ey + 3); g.moveTo(ex + 3, ey - 3); g.lineTo(ex - 3, ey + 3); g.stroke();
+    } else if (blink) {
+      g.strokeStyle = INK; g.lineWidth = 2.2;
+      g.beginPath(); g.moveTo(ex - 4, ey); g.quadraticCurveTo(ex, ey + 2.5, ex + 4, ey); g.stroke();
+    } else {
+      circ(g, ex, ey, 5.2); paint(g, "#ffd23f", INK, 1.6);
+      circ(g, ex + look.x * 1.7, ey + look.y * 1.7, 2.9); g.fillStyle = INK; g.fill();
+      circ(g, ex + look.x * 1.7 - 1, ey + look.y * 1.7 - 1.1, 1); g.fillStyle = "#fff"; g.fill();
+    }
+  }
+  // beak
+  g.beginPath(); g.moveTo(-2.8, .5); g.lineTo(2.8, .5); g.lineTo(0, 5.5); g.closePath(); paint(g, "#ff9f1c", INK, 1.6);
+  // feet
+  for (const side of [-1, 1]) { ell(g, side * 5, 17.5, 3.4, 2); paint(g, "#ff9f1c", INK, 1.5); }
+
+  if (o.dizzy) {
+    for (let i = 0; i < 3; i++) {
+      const a = t * 6 + i * TAU / 3;
+      star(g, Math.cos(a) * 14, -24 + Math.sin(a) * 4, 3.6, "#ffe066");
+    }
+  }
+  g.restore();
+}
+
+function drawOwlet(g, x, y, s, t, look = { x: 0, y: 0 }) {
+  g.save(); g.translate(x, y); g.scale(s, s);
+  g.lineJoin = "round";
+  shadow(g, 0, 14, 9, 3);
+  for (const side of [-1, 1]) {
+    g.beginPath(); g.moveTo(side * 4, -8); g.lineTo(side * 9, -15); g.lineTo(side * 9, -6); g.closePath(); paint(g, "#a99fd9", INK, 2);
+  }
+  ell(g, 0, 2, 11, 12.5); paint(g, "#c3bbef", INK, 2.2);
+  ell(g, 0, 6, 6.5, 6); paint(g, "#efe9ff", null);
+  for (const side of [-1, 1]) {
+    circ(g, side * 4.6, -2, 4.3); paint(g, "#fff", INK, 1.8);
+    circ(g, side * 4.6 + look.x * 1.3, -2 + look.y * 1.3, 2.2); g.fillStyle = INK; g.fill();
+  }
+  g.beginPath(); g.moveTo(-1.8, 1.6); g.lineTo(1.8, 1.6); g.lineTo(0, 4.4); g.closePath(); paint(g, "#ff9f1c", INK, 1.3);
+  g.restore();
+}
+
+function star(g, x, y, r, color) {
+  g.beginPath();
+  for (let i = 0; i < 10; i++) {
+    const a = -Math.PI / 2 + i * Math.PI / 5, rad = i % 2 ? r * .45 : r;
+    g.lineTo(x + Math.cos(a) * rad, y + Math.sin(a) * rad);
+  }
+  g.closePath(); paint(g, color, INK, 1.2);
+}
+
+/* ================================================================
+   Static background (grass, paths, deck, hedge) — drawn once
+   ================================================================ */
+function buildBackground() {
+  const g = bctx;
+  g.clearRect(0, 0, W, H);
+  for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
+    g.fillStyle = (x + y) % 2 ? "#5aa86c" : "#61b073";
+    g.fillRect(x * C, y * C, C, C);
+  }
+  const r = rng(7);
+  // grass tufts and flowers
+  for (let i = 0; i < 180; i++) {
+    const x = r() * W, y = r() * H;
+    const gx = Math.floor(x / C), gy = Math.floor(y / C);
+    if (grid[gy][gx] !== ".") continue;
+    if (r() < .18) {
+      const col = ["#fff", "#ffd1e8", "#ffe066", "#c9b8ff"][Math.floor(r() * 4)];
+      for (let k = 0; k < 5; k++) { circ(g, x + Math.cos(k * TAU / 5) * 2.6, y + Math.sin(k * TAU / 5) * 2.6, 2); g.fillStyle = col; g.fill(); }
+      circ(g, x, y, 1.6); g.fillStyle = "#ff9f1c"; g.fill();
+    } else {
+      g.strokeStyle = "#3f8a52"; g.lineWidth = 1.6; g.lineCap = "round";
+      g.beginPath(); g.moveTo(x - 3, y - 4); g.lineTo(x - 1, y + 1); g.lineTo(x + 1, y - 5); g.lineTo(x + 3, y + 1); g.lineTo(x + 5, y - 3); g.stroke();
+    }
+  }
+  // tall grass patches (just scenery, Nox can fly over them)
+  for (const t of tallGrass) {
+    const X = t.x * C, Y = t.y * C;
+    g.strokeStyle = t.s < .5 ? "#3f8a52" : "#478f59"; g.lineWidth = 2.2; g.lineCap = "round";
+    for (let k = 0; k < 7; k++) {
+      const bx = X + 6 + ((k * 37 + t.s * 50) % (C - 12)), by = Y + 14 + ((k * 23) % (C - 18));
+      g.beginPath(); g.moveTo(bx, by + 8); g.quadraticCurveTo(bx - 2, by, bx + (k % 2 ? 4 : -4), by - 6); g.stroke();
+    }
+  }
+  // paths: square sand tiles, with a darker edge wherever the path ends
+  const isP = (x, y) => x >= 0 && y >= 0 && x < COLS && y < ROWS && (grid[y][x] === "P" || (x === GATE.x && y === GATE.y));
+  for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
+    if (!isP(x, y)) continue;
+    g.fillStyle = "#e6c086"; g.fillRect(x * C, y * C, C, C);
+  }
+  g.strokeStyle = "#b88c52"; g.lineWidth = 3; g.lineCap = "butt";
+  for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
+    if (!isP(x, y)) continue;
+    const X0 = x * C, Y0 = y * C;
+    g.beginPath();
+    if (!isP(x, y - 1)) { g.moveTo(X0, Y0 + 1.5); g.lineTo(X0 + C, Y0 + 1.5); }
+    if (!isP(x, y + 1) && y < ROWS - 1) { g.moveTo(X0, Y0 + C - 1.5); g.lineTo(X0 + C, Y0 + C - 1.5); }
+    if (!isP(x - 1, y)) { g.moveTo(X0 + 1.5, Y0); g.lineTo(X0 + 1.5, Y0 + C); }
+    if (!isP(x + 1, y)) { g.moveTo(X0 + C - 1.5, Y0); g.lineTo(X0 + C - 1.5, Y0 + C); }
+    g.stroke();
+    for (let k = 0; k < 3; k++) { circ(g, X0 + 7 + r() * (C - 14), Y0 + 7 + r() * (C - 14), 1.3); g.fillStyle = "#c9a066"; g.fill(); }
+  }
+  // deck
+  const deck = objects.find(o => o.type === "deck");
+  if (deck) {
+    const X = deck.x * C, Y = deck.y * C, w = deck.w * C, h = deck.h * C;
+    shadow(g, X + w / 2, Y + h + 2, w / 2, 6);
+    rr(g, X + 2, Y + 2, w - 4, h - 4, 8); paint(g, "#c27d46", INK, 3);
+    g.save(); rr(g, X + 2, Y + 2, w - 4, h - 4, 8); g.clip();
+    g.strokeStyle = "#9b5c2c"; g.lineWidth = 2;
+    for (let yy = Y + 12; yy < Y + h; yy += 12) { g.beginPath(); g.moveTo(X, yy); g.lineTo(X + w, yy); g.stroke(); }
+    for (let yy = Y + 2, row = 0; yy < Y + h; yy += 12, row++) {
+      for (let xx = X + (row % 2 ? 30 : 60); xx < X + w; xx += 70) { g.beginPath(); g.moveTo(xx, yy); g.lineTo(xx, yy + 12); g.stroke(); }
+    }
+    g.restore();
+    // railing along the top
+    g.strokeStyle = INK; g.lineWidth = 3;
+    g.beginPath(); g.moveTo(X + 8, Y + 8); g.lineTo(X + w - 8, Y + 8); g.stroke();
+    for (let xx = X + 8; xx <= X + w - 8; xx += 26) { circ(g, xx, Y + 8, 3.5); paint(g, "#7a4a24", INK, 2); }
+  }
+  // No hedge is drawn: the edge of the screen is the edge of the park.
+  // The outer ring of cells is still out of bounds, so Nox bumps there.
+}
+
+/* ================================================================
+   Animated scenery
+   ================================================================ */
+function drawObject(g, o, t) {
+  const X = o.x * C, Y = o.y * C, w = o.w * C, h = o.h * C;
+  switch (o.type) {
+    case "tree": {
+      const x = X + C / 2, y = Y + C / 2;
+      shadow(g, x + 2, y + 15, 16, 5);
+      rr(g, x - 3.5, y + 2, 7, 13, 2); paint(g, "#8a5a33", INK, 2);
+      const sway = Math.sin(t * 1.3 + o.x) * 1;
+      for (const [dx, dy, rad, col] of [[-8, -2, 11, "#2f8a4e"], [8, -2, 11, "#2f8a4e"], [0, -10, 13, "#38a05c"]]) {
+        circ(g, x + dx + sway, y + dy, rad); paint(g, col, INK, 2.5);
+      }
+      circ(g, x - 4 + sway, y - 14, 4); g.fillStyle = "#5ec27f"; g.fill();
+      break;
+    }
+    case "bench": {
+      const x = X + 4, y = Y + 14;
+      shadow(g, X + C / 2, Y + 32, 16, 4);
+      for (const lx of [x + 4, x + 26]) { g.fillStyle = INK; g.fillRect(lx, y + 10, 3, 9); }
+      rr(g, x, y, 32, 7, 2); paint(g, "#b8743f", INK, 2);
+      rr(g, x, y + 8, 32, 6, 2); paint(g, "#a5652f", INK, 2);
+      break;
+    }
+    case "swings": {
+      shadow(g, X + w / 2, Y + h - 6, w / 2 - 6, 6);
+      g.strokeStyle = INK; g.lineWidth = 3;
+      // A-frame legs
+      for (const lx of [X + 12, X + w - 12]) {
+        g.beginPath(); g.moveTo(lx - 9, Y + h - 6); g.lineTo(lx, Y + 12); g.lineTo(lx + 9, Y + h - 6);
+        g.strokeStyle = INK; g.lineWidth = 6; g.stroke(); g.strokeStyle = "#e94f37"; g.lineWidth = 3; g.stroke();
+      }
+      g.beginPath(); g.moveTo(X + 10, Y + 12); g.lineTo(X + w - 10, Y + 12);
+      g.strokeStyle = INK; g.lineWidth = 7; g.stroke(); g.strokeStyle = "#e94f37"; g.lineWidth = 4; g.stroke();
+      [X + w * .36, X + w * .64].forEach((sx, i) => {
+        const a = Math.sin(t * 2.2 + i * 1.7) * .32, len = h - 32;
+        const ex = sx + Math.sin(a) * len, ey = Y + 12 + Math.cos(a) * len;
+        g.strokeStyle = "#5b5670"; g.lineWidth = 1.6;
+        g.beginPath(); g.moveTo(sx - 5, Y + 13); g.lineTo(ex - 6, ey); g.moveTo(sx + 5, Y + 13); g.lineTo(ex + 6, ey); g.stroke();
+        rr(g, ex - 9, ey - 2, 18, 6, 2); paint(g, "#3d84c6", INK, 2);
+      });
+      break;
+    }
+    case "slide": {
+      shadow(g, X + w / 2, Y + h - 4, w / 2 - 4, 6);
+      // ladder
+      g.strokeStyle = INK; g.lineWidth = 3;
+      g.beginPath(); g.moveTo(X + 10, Y + h - 6); g.lineTo(X + 14, Y + 12); g.moveTo(X + 24, Y + h - 6); g.lineTo(X + 26, Y + 12); g.stroke();
+      g.lineWidth = 2;
+      for (let k = 0; k < 5; k++) { const yy = Y + 20 + k * 11; g.beginPath(); g.moveTo(X + 12, yy); g.lineTo(X + 25, yy); g.stroke(); }
+      // platform
+      rr(g, X + 8, Y + 6, 24, 10, 3); paint(g, "#3d84c6", INK, 2.5);
+      // chute
+      g.beginPath();
+      g.moveTo(X + 30, Y + 8); g.quadraticCurveTo(X + w - 18, Y + 20, X + w - 6, Y + h - 12);
+      g.lineTo(X + w - 18, Y + h - 6); g.quadraticCurveTo(X + w - 30, Y + 30, X + 30, Y + 18); g.closePath();
+      paint(g, "#ffcf3f", INK, 2.5);
+      break;
+    }
+    case "sandbox": {
+      rr(g, X + 4, Y + 4, w - 8, h - 8, 6); paint(g, "#b5793b", INK, 3);
+      rr(g, X + 11, Y + 11, w - 22, h - 22, 4); paint(g, "#f5d98f", INK, 2);
+      // castle
+      const bx = X + 26, by = Y + 34;
+      rr(g, bx, by, 26, 18, 2); paint(g, "#e7c271", INK, 2);
+      for (let k = 0; k < 3; k++) { g.fillStyle = "#e7c271"; g.fillRect(bx + k * 9, by - 5, 6, 6); g.strokeStyle = INK; g.lineWidth = 2; g.strokeRect(bx + k * 9, by - 5, 6, 6); }
+      // bucket
+      g.beginPath(); g.moveTo(X + w - 40, Y + 24); g.lineTo(X + w - 22, Y + 24); g.lineTo(X + w - 25, Y + 44); g.lineTo(X + w - 37, Y + 44); g.closePath(); paint(g, "#e94f37", INK, 2);
+      break;
+    }
+    case "fountain": {
+      const x = X + w / 2, y = Y + h / 2, R = w / 2 - 6;
+      shadow(g, x, y + R - 2, R, 8);
+      circ(g, x, y, R); paint(g, "#b9b3c9", INK, 3);
+      circ(g, x, y, R - 8); paint(g, "#5fb8e6", INK, 2);
+      g.strokeStyle = "rgba(255,255,255,.7)"; g.lineWidth = 1.5;
+      for (let k = 0; k < 3; k++) {
+        const p = ((t * .6 + k / 3) % 1);
+        circ(g, x, y, 9 + p * (R - 18)); g.globalAlpha = 1 - p; g.stroke(); g.globalAlpha = 1;
+      }
+      circ(g, x, y, 9); paint(g, "#d4cfe0", INK, 2);
+      circ(g, x, y - 4, 4); paint(g, "#e9e5f2", INK, 1.5);
+      for (let k = 0; k < 8; k++) {
+        const a = k * TAU / 8 + t * .4, p = (t * 1.5 + k * .13) % 1;
+        const r0 = 5 + p * (R - 16);
+        circ(g, x + Math.cos(a) * r0, y - 6 + Math.sin(a) * r0 - Math.sin(p * Math.PI) * 14, 2);
+        g.fillStyle = "#e6f6ff"; g.fill();
+      }
+      break;
+    }
+    case "pond": {
+      // drawn inset from its cells so there is always grass between the water and the path
+      const m = 10;
+      rr(g, X + m, Y + m, w - 2 * m, h - 2 * m, 26); paint(g, "#3e8fd0", INK, 3);
+      rr(g, X + m + 7, Y + m + 7, w - 2 * m - 14, h - 2 * m - 14, 20); g.fillStyle = "#56a6e3"; g.fill();
+      for (const [px, py] of [[X + m + 16, Y + m + 22], [X + w - m - 18, Y + h - m - 20]]) {
+        g.beginPath(); g.moveTo(px, py); g.arc(px, py, 9, .4, TAU - .2); g.closePath(); paint(g, "#48a85f", INK, 2);
+      }
+      // a duck paddling up and down
+      const dy = Y + m + 18 + (Math.sin(t * .5) * .5 + .5) * Math.max(0, h - 2 * m - 34);
+      const dx = X + w / 2 + Math.sin(t * 1.1) * 6;
+      ell(g, dx, dy + 2, 10, 7); paint(g, "#fff", INK, 2);
+      circ(g, dx + 5, dy - 5, 5); paint(g, "#fff", INK, 2);
+      g.beginPath(); g.moveTo(dx + 9, dy - 6); g.lineTo(dx + 14, dy - 4); g.lineTo(dx + 9, dy - 3); g.closePath(); paint(g, "#ff9f1c", INK, 1.4);
+      circ(g, dx + 6, dy - 6, 1.2); g.fillStyle = INK; g.fill();
+      break;
+    }
+    case "bush": {
+      const x = X + C / 2, y = Y + C / 2 + 4;
+      shadow(g, x, y + 10, 15, 4);
+      for (const [dx, dy, rad] of [[-7, 2, 8], [7, 2, 8], [0, -4, 10]]) { circ(g, x + dx, y + dy, rad); paint(g, "#3d9a5c", INK, 2.2); }
+      circ(g, x - 3, y - 7, 3); g.fillStyle = "#62c283"; g.fill();
+      if ((o.x + o.y) % 3 === 0) { circ(g, x + 6, y - 2, 2); g.fillStyle = "#ffd1e8"; g.fill(); }
+      break;
+    }
+    case "telescope": {
+      const x = X + C / 2, y = Y + C / 2 + 4;
+      g.strokeStyle = INK; g.lineWidth = 2.5;
+      g.beginPath(); g.moveTo(x, y); g.lineTo(x - 9, y + 14); g.moveTo(x, y); g.lineTo(x + 9, y + 14); g.moveTo(x, y); g.lineTo(x, y + 15); g.stroke();
+      g.save(); g.translate(x, y - 2); g.rotate(-.6);
+      rr(g, -14, -5, 26, 10, 4); paint(g, "#7b5cd6", INK, 2.5);
+      rr(g, 10, -6.5, 6, 13, 2); paint(g, "#ffd23f", INK, 2);
+      g.restore();
+      break;
+    }
+  }
+}
+
+function drawLamp(g, l, t) {
+  const x = cx(l.x), y = cy(l.y);
+  const warn = warnLamp === l && Math.floor(t * 8) % 2 === 0;
+  const lit = l.on || warn;
+  const since = t - l.changedAt;
+  const pop = since < .35 ? 1 + Math.sin(since / .35 * Math.PI) * .25 : 1;
+  shadow(g, x, y + 16, 9, 3.5);
+  rr(g, x - 6, y + 10, 12, 7, 2); paint(g, "#3a3550", INK, 2);       // base
+  rr(g, x - 2.2, y - 12, 4.4, 24, 2); paint(g, "#3a3550", INK, 2);    // pole
+  g.save(); g.translate(x, y - 15); g.scale(pop, pop);
+  g.beginPath(); g.moveTo(-9, -6); g.lineTo(9, -6); g.lineTo(6, 6); g.lineTo(-6, 6); g.closePath(); paint(g, "#3a3550", INK, 2);
+  circ(g, 0, 0, 5.5); paint(g, lit ? "#fff3a6" : "#5c5775", INK, 1.8);
+  g.beginPath(); g.moveTo(-6, -9); g.lineTo(6, -9); g.lineTo(0, -14); g.closePath(); paint(g, "#3a3550", INK, 2);
+  g.restore();
+  // letter tag = the Verilog input name
+  rr(g, x + 7, y + 2, 13, 13, 3); paint(g, lit ? "#ffe066" : "#d8d4ea", INK, 2);
+  g.fillStyle = INK; g.font = "700 10px Fredoka, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
+  g.fillText(l.id.toUpperCase(), x + 13.5, y + 9);
+  if (!l.on && sunset && state !== "intro") {
+    g.fillStyle = "rgba(255,255,255,.75)"; g.font = "600 9px Fredoka, sans-serif";
+    const zz = (t * 1.2) % 1;
+    g.globalAlpha = 1 - zz; g.fillText("z", x - 12, y - 24 - zz * 8); g.globalAlpha = 1;
+  }
+}
+
+function drawPickup(g, t) {
+  if (!pickup) return;
+  const x = cx(pickup.x), y = cy(pickup.y);
+  const appear = Math.min(1, (T - pickup.born) / .3);
+  const hop = Math.abs(Math.sin(t * 5)) * 4;
+  drawOwlet(g, x, y - hop, .72 * appear, t, { x: Math.sin(t * 1.5), y: -.3 });
+  // little help bubble
+  g.save(); g.globalAlpha = appear;
+  rr(g, x + 6, y - 32 - hop, 16, 14, 5); paint(g, "#fff", INK, 2);
+  g.fillStyle = INK; g.font = "700 11px Fredoka, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
+  g.fillText("?", x + 14, y - 25 - hop);
+  g.restore();
+}
+
+/* ================================================================
+   Render
+   ================================================================ */
+const lerp = (a, b, k) => a + (b - a) * k;
+
+function render() {
+  const t = T;
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.fillStyle = "#2c6e45"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+  const S = VIEW.s * VIEW.dpr;
+  ctx.setTransform(S, 0, 0, S, VIEW.ox * VIEW.dpr, VIEW.oy * VIEW.dpr);
+  ctx.save();
+  if (shake > 0) ctx.translate((Math.random() - .5) * shake, (Math.random() - .5) * shake);
+  ctx.drawImage(bg, 0, 0, W, H);
+
+  // scenery (sorted top to bottom so lower things overlap upper ones)
+  const drawables = objects.filter(o => o.type !== "deck").map(o => ({ y: o.y + o.h, draw: () => drawObject(ctx, o, t) }));
+  LAMPS.forEach(l => drawables.push({ y: l.y + 1, draw: () => drawLamp(ctx, l, t) }));
+  if (pickup) drawables.push({ y: pickup.y + 1, draw: () => drawPickup(ctx, t) });
+
+  // the owl and its line of owlets
+  const k = state === "play" ? Math.min(1, acc / tickMs()) : 1;
+  const pos = snake.map((s, i) => {
+    const p = prevSnake[i] || s;
+    return { x: cx(lerp(p.x, s.x, k)), y: cy(lerp(p.y, s.y, k)) };
+  });
+  const [ldx, ldy] = DIRS[queue.length && state === "play" ? queue[0] : dir];
+  for (let i = pos.length - 1; i >= 1; i--) {
+    const p = pos[i], ahead = pos[i - 1];
+    const lx = Math.sign(Math.round(ahead.x - p.x)), ly = Math.sign(Math.round(ahead.y - p.y));
+    drawables.push({ y: (p.y / C) + .5, draw: () => drawOwlet(ctx, p.x, p.y - Math.abs(Math.sin(t * 10 + i)) * 2.5, .7, t, { x: lx, y: ly }) });
+  }
+  const head = pos[0];
+  let hx = head.x, hy = head.y;
+  if (state === "crash" && crashAt) {
+    const b = Math.max(0, .25 - phaseT) * 4;      // a small bump toward what you hit
+    hx += (crashAt.tx - crashAt.x) * b * 8; hy += (crashAt.ty - crashAt.y) * b * 8;
+  }
+  const flying = state === "play" || state === "ready" || state === "stopped";
+  drawables.push({ y: (hy / C) + .51, draw: () => drawOwl(ctx, hx, hy - 4 + (flying ? Math.sin(t * 7) * 2 : 0), .95, { t, look: { x: ldx, y: ldy }, dizzy: state === "crash" || state === "restart", still: !flying }) });
+
+  drawables.sort((a, b) => a.y - b.y).forEach(d => d.draw());
+
+  // particles
+  for (const p of particles) {
+    const a = Math.max(0, p.life / p.max);
+    ctx.globalAlpha = Math.min(1, a * 1.5);
+    circ(ctx, p.x, p.y, p.kind === "puff" ? p.r * (1.6 - a * .6) : p.r);
+    if (p.kind === "puff") { ctx.fillStyle = p.color; ctx.fill(); } else paint(ctx, p.color, INK, 1);
+  }
+  ctx.globalAlpha = 1;
+
+  drawDarkness(t);
+
+  // floating words
+  ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.lineJoin = "round";
+  for (const tx of texts) {
+    ctx.globalAlpha = Math.min(1, tx.life * 1.5);
+    ctx.font = "700 13px Fredoka, sans-serif";
+    ctx.strokeStyle = INK; ctx.lineWidth = 4; ctx.strokeText(tx.text, tx.x, tx.y);
+    ctx.fillStyle = tx.color; ctx.fillText(tx.text, tx.x, tx.y);
+  }
+  ctx.globalAlpha = 1;
+
+  if (state === "intro") banner("Night " + level, phaseT < .6 ? "The sun is setting..." : "The lamps are coming on");
+  if (state === "ready") {
+    const pulse = .75 + Math.sin(t * 5) * .25;
+    banner("Ready, Nox?", "Press an arrow key or swipe to fly", pulse);
+  }
+  if (state === "restart") banner("Out of lives!", "Starting again from Night 1...");
+  if (state === "stopped") banner("Nox is hovering", "Arrow key or Space to fly on · Space twice to pause");
+  if (state === "win") drawSky(Math.min(1, phaseT / 1.4), t);
+
+  ctx.restore();
+}
+
+function drawDarkness(t) {
+  const night = state === "title" ? .12 : (sunset ? .62 : .18);
+  dctx.globalCompositeOperation = "source-over";
+  dctx.clearRect(0, 0, W, H);
+  dctx.fillStyle = `rgba(14, 12, 52, ${night})`;
+  dctx.fillRect(0, 0, W, H);
+  dctx.globalCompositeOperation = "destination-out";
+  const hole = (x, y, r, a) => {
+    const gr = dctx.createRadialGradient(x, y, 0, x, y, r);
+    gr.addColorStop(0, `rgba(0,0,0,${a})`); gr.addColorStop(1, "rgba(0,0,0,0)");
+    dctx.fillStyle = gr; circ(dctx, x, y, r); dctx.fill();
+  };
+  const lit = LAMPS.filter(l => l.on || (warnLamp === l && Math.floor(t * 8) % 2 === 0));
+  if (sunset) {
+    lit.forEach(l => hole(cx(l.x), cy(l.y) - 15, C * 3.4, .95));
+    // Nox's eyes adjust to the dark: a soft glow around the owl so you can always see it
+    const p = snake[0];
+    hole(cx(p.x), cy(p.y), C * 1.8, .55);
+    if (pickup) hole(cx(pickup.x), cy(pickup.y), C * 1.1, .4);
+  }
+  ctx.drawImage(dark, 0, 0, W, H);
+
+  if (sunset) {
+    ctx.globalCompositeOperation = "lighter";
+    lit.forEach(l => {
+      const x = cx(l.x), y = cy(l.y) - 15;
+      const flick = .9 + Math.sin(t * 13 + l.x) * .05;
+      const gr = ctx.createRadialGradient(x, y, 0, x, y, C * 2.4);
+      gr.addColorStop(0, `rgba(255, 210, 90, ${.42 * flick})`); gr.addColorStop(1, "rgba(255, 210, 90, 0)");
+      ctx.fillStyle = gr; circ(ctx, x, y, C * 2.4); ctx.fill();
+    });
+    ctx.globalCompositeOperation = "source-over";
+  }
+}
+
+function banner(title, sub, alpha = 1) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  const k = 1 / VIEW.s;                     // sizes below are screen pixels, whatever the zoom
+  const titleFont = `700 ${17 * k}px Fredoka, sans-serif`, subFont = `500 ${12.5 * k}px Fredoka, sans-serif`;
+  ctx.font = titleFont; const tw = ctx.measureText(title).width;
+  ctx.font = subFont; const sw = ctx.measureText(sub).width;
+  const w = Math.max(tw, sw) + 40 * k, h = 52 * k, x = (W - w) / 2;
+  // top centre: Nox starts at the entrance at the bottom, so a message there would cover it
+  const top = Math.max(0, -VIEW.oy / VIEW.s);
+  const y = top + 18 * k;
+  rr(ctx, x, y + 4 * k, w, h, 14 * k); ctx.fillStyle = INK; ctx.fill();
+  rr(ctx, x, y, w, h, 14 * k); paint(ctx, "#fff6e3", INK, 3 * k);
+  ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  ctx.fillStyle = INK; ctx.font = titleFont; ctx.fillText(title, W / 2, y + 19 * k);
+  ctx.fillStyle = "#5b5378"; ctx.font = subFont; ctx.fillText(sub, W / 2, y + 37 * k);
+  ctx.restore();
+}
+
+/* ================================================================
+   The stargazing sky (shown when the hardware says ready = 1)
+   ================================================================ */
+const skyStars = [], galaxy = [];
+{
+  const r = rng(42);
+  for (let i = 0; i < 260; i++) skyStars.push({ x: r() * W, y: r() * H * .8, r: .5 + r() * 1.6, ph: r() * TAU });
+  for (let i = 0; i < 900; i++) {
+    const t = r(), off = (r() + r() + r() - 1.5) * 70;
+    const x = -40 + t * (W + 80), y = H * .78 - t * H * .7;
+    galaxy.push({ x: x + off * .45, y: y + off, r: .4 + r() * 1.1, c: ["#ffffff", "#d9ccff", "#bfe3ff", "#ffd9f2"][Math.floor(r() * 4)] });
+  }
+}
+function drawSky(a, t) {
+  ctx.save();
+  ctx.globalAlpha = a;
+  const gr = ctx.createLinearGradient(0, 0, 0, H);
+  gr.addColorStop(0, "#090c2b"); gr.addColorStop(.6, "#1d1a52"); gr.addColorStop(1, "#3a2466");
+  ctx.fillStyle = gr; ctx.fillRect(0, 0, W, H);
+
+  // the galaxy's glow, then its stars
+  ctx.globalCompositeOperation = "lighter";
+  for (let i = 0; i <= 14; i++) {
+    const k = i / 14, x = -40 + k * (W + 80), y = H * .78 - k * H * .7;
+    const g2 = ctx.createRadialGradient(x, y, 0, x, y, 120);
+    g2.addColorStop(0, `rgba(150, 120, 255, ${.10 * a})`); g2.addColorStop(1, "rgba(150,120,255,0)");
+    ctx.fillStyle = g2; circ(ctx, x, y, 120); ctx.fill();
+  }
+  for (const s of galaxy) { ctx.fillStyle = s.c; circ(ctx, s.x, s.y, s.r); ctx.fill(); }
+  ctx.globalCompositeOperation = "source-over";
+  for (const s of skyStars) {
+    const tw = .5 + Math.sin(t * 2 + s.ph) * .5;
+    ctx.globalAlpha = a * (.4 + tw * .6);
+    ctx.fillStyle = "#fff"; circ(ctx, s.x, s.y, s.r); ctx.fill();
+  }
+  ctx.globalAlpha = a;
+  // big cartoon stars that pop in
+  [[120, 90], [700, 70], [560, 200], [260, 230], [800, 260]].forEach(([x, y], i) => {
+    const s = Math.max(0, Math.min(1, (phaseT - .6 - i * .15) * 3));
+    if (s > 0) star(ctx, x, y, 9 * s * (1 + Math.sin(t * 3 + i) * .08), "#ffe066");
+  });
+  // moon
+  circ(ctx, W - 110, 90, 34); paint(ctx, "#fff3c4", INK, 3);
+  circ(ctx, W - 96, 80, 30); ctx.fillStyle = "#151545"; ctx.fill();
+
+  // shooting star every couple of seconds
+  const sp = (t % 2.6) / .8;
+  if (sp < 1) {
+    const sx = W * .75 - sp * 320, sy = 40 + sp * 140;
+    const tail = ctx.createLinearGradient(sx, sy, sx + 90, sy - 40);
+    tail.addColorStop(0, "rgba(255,255,255,.95)"); tail.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.strokeStyle = tail; ctx.lineWidth = 3; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx + 90, sy - 40); ctx.stroke();
+  }
+
+  // hills and the deck railing
+  ctx.fillStyle = "#17143a";
+  ctx.beginPath(); ctx.moveTo(0, H);
+  ctx.lineTo(0, H - 120); ctx.quadraticCurveTo(200, H - 190, 420, H - 120); ctx.quadraticCurveTo(640, H - 60, W, H - 150);
+  ctx.lineTo(W, H); ctx.closePath(); ctx.fill();
+  rr(ctx, 0, H - 72, W, 72, 0); ctx.fillStyle = "#6e4426"; ctx.fill();
+  ctx.strokeStyle = INK; ctx.lineWidth = 4;
+  ctx.beginPath(); ctx.moveTo(0, H - 72); ctx.lineTo(W, H - 72); ctx.stroke();
+  for (let x = 20; x < W; x += 60) { ctx.fillStyle = INK; ctx.fillRect(x, H - 72, 5, 72); }
+
+  // Nox and the rescued owlets, looking up
+  const ox = W * .46, oy = H - 108;
+  // telescope
+  ctx.save(); ctx.translate(ox + 90, oy + 10);
+  ctx.strokeStyle = INK; ctx.lineWidth = 4;
+  ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-18, 50); ctx.moveTo(0, 0); ctx.lineTo(18, 50); ctx.stroke();
+  ctx.rotate(-.75);
+  rr(ctx, -30, -11, 64, 22, 8); paint(ctx, "#7b5cd6", INK, 3);
+  rr(ctx, 30, -14, 14, 28, 4); paint(ctx, "#ffd23f", INK, 3);
+  ctx.restore();
+  drawOwl(ctx, ox, oy, 2.4, { t, look: { x: .5, y: -1 }, still: true, noShadow: true });
+  for (let i = 0; i < owlets; i++) {
+    const x = ox - 70 - i * 32;
+    if (x < 20) break;
+    drawOwlet(ctx, x, H - 86 - Math.abs(Math.sin(t * 3 + i)) * 3, 1.15, t, { x: .3, y: -1 });
+  }
+  ctx.restore();
+}
+
+/* ================================================================
+   HUD
+   ================================================================ */
+const chipBox = document.getElementById("lampChips");
+LAMPS.forEach(l => {
+  const el = document.createElement("div");
+  el.className = "chip"; el.id = "chip-" + l.id;
+  el.innerHTML = `<span class="bulb"></span><span class="name">${l.name}</span>`;
+  chipBox.appendChild(el);
+});
+
+const OWL_ICON = `<svg width="28" height="28" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 6 L5 1 L8 4 Z M16 6 L15 1 L12 4 Z" fill="#b8692f" stroke="#1b1530" stroke-width="1.4" stroke-linejoin="round"/><ellipse cx="10" cy="11" rx="7.5" ry="8" fill="#c97c3c" stroke="#1b1530" stroke-width="1.6"/><circle cx="7" cy="9" r="2.6" fill="#ffd23f" stroke="#1b1530" stroke-width="1"/><circle cx="13" cy="9" r="2.6" fill="#ffd23f" stroke="#1b1530" stroke-width="1"/><circle cx="7" cy="9" r="1.1" fill="#1b1530"/><circle cx="13" cy="9" r="1.1" fill="#1b1530"/><path d="M8.8 11.5 L11.2 11.5 L10 13.6 Z" fill="#ff9f1c"/></svg>`;
+
+function updateHUD() {
+  // one little owl per life
+  document.getElementById("lives").innerHTML = OWL_ICON.repeat(Math.max(0, lives));
+  LAMPS.forEach(l => {
+    const el = document.getElementById("chip-" + l.id);
+    el.classList.toggle("on", l.on);
+    el.classList.toggle("warn", warnLamp === l);
+  });
+}
+
+/* ================================================================
+   Overlays & input
+   ================================================================ */
+const OVERLAYS = ["ovTitle", "ovPause", "ovWin"];
+function show(id) { OVERLAYS.forEach(o => document.getElementById(o).hidden = o !== id); document.getElementById("nextFloat").hidden = true; }
+function hideOverlays() { OVERLAYS.forEach(o => document.getElementById(o).hidden = true); document.getElementById("nextFloat").hidden = true; }
+
+function nextNight() { level++; newNight(); }
+
+document.getElementById("btnStart").onclick = () => { sfx.hoot(); newGame(); };
+document.getElementById("btnResume").onclick = togglePause;
+document.getElementById("btnNext").onclick = nextNight;
+document.getElementById("nextFloat").onclick = nextNight;
+document.getElementById("btnLook").onclick = () => { hideOverlays(); document.getElementById("nextFloat").hidden = false; };
+document.getElementById("mute").onclick = e => { muted = !muted; e.currentTarget.textContent = muted ? "Sound off" : "Sound on"; };
+
+const KEYS = { ArrowUp: "up", KeyW: "up", ArrowDown: "down", KeyS: "down", ArrowLeft: "left", KeyA: "left", ArrowRight: "right", KeyD: "right" };
+window.addEventListener("keydown", e => {
+  if (KEYS[e.code]) { e.preventDefault(); steer(KEYS[e.code]); return; }
+  if (e.code === "Space" || e.code === "KeyP" || e.code === "Escape") {
+    e.preventDefault();
+    if (state === "title" && e.code === "Space") { sfx.hoot(); newGame(); return; }
+    if (state === "win" && winCardShown && e.code === "Space") { nextNight(); return; }
+    if (e.code === "Space" && !e.repeat) { spacePress(); return; }
+    if (e.code !== "Space") togglePause();
+  }
+  if (e.code === "Enter") {
+    if (state === "title") { sfx.hoot(); newGame(); }
+    else if (state === "win" && winCardShown) nextNight();
+  }
+});
+document.querySelectorAll(".pad button").forEach(b => b.addEventListener("pointerdown", e => { e.preventDefault(); steer(b.dataset.dir); }));
+
+let swipe = null;
+canvas.addEventListener("pointerdown", e => { swipe = { x: e.clientX, y: e.clientY }; });
+canvas.addEventListener("pointerup", e => {
+  if (!swipe) return;
+  const dx = e.clientX - swipe.x, dy = e.clientY - swipe.y;
+  swipe = null;
+  if (Math.max(Math.abs(dx), Math.abs(dy)) < 24) return;
+  steer(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? "right" : "left") : (dy > 0 ? "down" : "up"));
+});
+document.addEventListener("visibilitychange", () => { if (document.hidden && (state === "play" || state === "ready" || state === "stopped")) togglePause(); });
+
+/* Space once = stop (Nox hovers in place). Space twice quickly = pause.
+   While stopped, a later single Space flies on in the same direction. */
+const DOUBLE_TAP_MS = 400;
+let lastSpace = -Infinity;
+function spacePress() {
+  const now = performance.now(), quick = now - lastSpace < DOUBLE_TAP_MS;
+  lastSpace = now;
+  if (state === "paused") { togglePause(); return; }
+  if (state === "play") { settle(); state = "stopped"; queue = []; return; }
+  if (state === "stopped") {
+    if (quick) togglePause();
+    else { settle(); state = "play"; }
+    return;
+  }
+  if (state === "ready" && quick) togglePause();
+}
+
+/* ================================================================
+   Mascot on the title card
+   ================================================================ */
+const mascot = document.getElementById("mascot").getContext("2d");
+function drawMascots(t) {
+  if (!document.getElementById("ovTitle").hidden) {
+    mascot.setTransform(1, 0, 0, 1, 0, 0); mascot.clearRect(0, 0, 240, 240);
+    const g = mascot.createRadialGradient(120, 120, 10, 120, 120, 110);
+    g.addColorStop(0, "rgba(255,224,102,.55)"); g.addColorStop(1, "rgba(255,224,102,0)");
+    mascot.fillStyle = g; circ(mascot, 120, 120, 110); mascot.fill();
+    drawOwl(mascot, 120, 128 + Math.sin(t * 3) * 5, 4.2, { t, look: { x: Math.sin(t * .9), y: Math.cos(t * .6) * .4 } });
+  }
+}
+
+/* ================================================================
+   Go
+   ================================================================ */
+sizeCanvases();
+// On resize the park is rescaled. Before a game starts it is also re-laid
+// out to fit the new window shape; mid-game the layout stays put.
+let resizeTimer = 0;
+window.addEventListener("resize", () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    if (state === "title") { buildLayout(); resetOwl(); }
+    sizeCanvases();
+  }, 120);
+});
+updateHUD();
+
+let last = performance.now();
+function frame(now) {
+  const dt = Math.min(.05, (now - last) / 1000);
+  last = now;
+  if (state !== "paused") update(dt);
+  render();
+  drawMascots(T);
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
