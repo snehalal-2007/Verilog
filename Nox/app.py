@@ -7,11 +7,19 @@ answer back. It does not decide anything. The rule about when it is
 time to stargaze lives in stargazing_controller.v and nowhere else.
 """
 
-from flask import Flask, render_template, request, jsonify, send_from_directory
+from flask import Flask, render_template, request, jsonify, send_from_directory, redirect
 from pathlib import Path
 import subprocess
 import os
 import re
+import logging
+import threading
+import time
+from collections import deque
+
+# Each Verilog run is printed by show_run() below, so the per-request
+# "POST /simulate 200" lines from Flask's server are switched off.
+logging.getLogger("werkzeug").setLevel(logging.WARNING)
 
 app = Flask(__name__)
 
@@ -48,6 +56,35 @@ def build_if_stale():
     return None if result.returncode == 0 else (result.stderr or result.stdout)
 
 
+LAMP_NAMES = ["Fountain", "Trail", "Playground", "Stargazing"]   # a, b, c, d
+run_count = 0
+RUNS = deque(maxlen=500)          # recent Verilog runs, read by the /verilog page
+runs_lock = threading.Lock()
+
+
+def show_run(plusargs, result_line, values):
+    """Record one Verilog run for the /verilog page and print it in the terminal."""
+    global run_count
+    sunset, *lamps, ready = values
+    with runs_lock:
+        run_count += 1
+        RUNS.append({
+            "id": run_count,
+            "time": time.strftime("%H:%M:%S"),
+            "command": "vvp simulation " + " ".join(plusargs),
+            "sunset": sunset,
+            "lamps": [{"name": n, "on": on} for n, on in zip(LAMP_NAMES, lamps)],
+            "raw": result_line,
+            "ready": ready,
+        })
+    lights = "  ".join(f"{name} {'ON ' if on else 'off'}" for name, on in zip(LAMP_NAMES, lamps))
+    verdict = "READY = 1  -> time to stargaze!" if ready else "READY = 0  -> not yet"
+    print(f"\n[verilog run #{run_count}]  vvp simulation {' '.join(plusargs)}", flush=True)
+    print(f"  sun {'down' if sunset else 'up'}  |  {lights}", flush=True)
+    print(f"  {result_line}", flush=True)
+    print(f"  {verdict}", flush=True)
+
+
 def as_bit(value, name):
     """Accept 0/1, "0"/"1", True/False — reject anything else."""
 
@@ -73,6 +110,28 @@ def home():
                 "<code>cd frontend &amp;&amp; npm install &amp;&amp; npm run build</code><br>"
                 'The original park is still at <a href="/classic">/classic</a>.'), 503
     return send_from_directory(FRONTEND, "index.html")
+
+
+@app.route("/verilog")
+def verilog_console():
+    """Live log of every Verilog run (the same React app, console page)."""
+    return home()
+
+
+@app.route("/console")
+def console():
+    """Old address of the Verilog console."""
+    return redirect("/verilog")
+
+
+@app.route("/runs")
+def runs():
+    """Verilog runs newer than ?after=<id>. `last` lets the /verilog page notice a server restart."""
+    after = request.args.get("after", 0, type=int)
+    with runs_lock:
+        new = [r for r in RUNS if r["id"] > after]
+        last = run_count
+    return jsonify({"runs": new, "last": last})
 
 
 @app.route("/assets/<path:name>")
@@ -115,6 +174,7 @@ def simulate():
                         "output": run.stdout + run.stderr}), 500
 
     values = [int(v) for v in match.groups()]
+    show_run(plusargs, match.group(0), values)
 
     return jsonify({
         "sunset": values[0],
@@ -130,4 +190,6 @@ def simulate():
 if __name__ == "__main__":
     # Port 5000 is taken by macOS Control Center (AirPlay Receiver), so
     # the default is 5050. Override with PORT=xxxx if that one is busy too.
-    app.run(debug=True, port=int(os.environ.get("PORT", 5050)))
+    # use_debugger=False: Flask's interactive debugger would take over /console
+    # with a PIN-locked Python shell. Auto-reload on code changes stays on.
+    app.run(debug=True, use_debugger=False, port=int(os.environ.get("PORT", 5050)))

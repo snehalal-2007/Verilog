@@ -59,6 +59,8 @@ npm run build
 
 Then run the server as below and open <http://localhost:5050>. The original realistic park is still at <http://localhost:5050/classic>.
 
+To show the Verilog working while you play, open <http://localhost:5050/verilog> in a second tab or window. Every Verilog run appears there within half a second: the `vvp` command, which lamps were on, the simulator's `RESULT` line and the `READY` verdict. The same runs are printed in the terminal running `app.py`.
+
 While working on the UI, `npm run dev` serves it with live reload on <http://localhost:5173> and forwards `/simulate` to Flask on port 5050, so keep `python3 app.py` running too.
 
 | Path | Purpose |

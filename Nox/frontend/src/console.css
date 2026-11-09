@@ -1,0 +1,101 @@
+/* /verilog — a pixelated black/grey page with one window in the game's cartoon style:
+   thick ink outline, solid drop shadow, yellow top bar, chunky buttons.
+   Inside: a black screen with white text. */
+body.console-body {
+  overflow: auto;
+  background-color: #161616;
+  background-size: 256px 256px;          /* each pixel of the tile shows as an 8 x 8 square */
+  background-repeat: repeat;
+  image-rendering: pixelated;
+  font-family: Fredoka, ui-rounded, "Avenir Next", system-ui, sans-serif;
+}
+body.console-body .console-window, body.console-body canvas { image-rendering: auto; }
+.console-page {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  padding: 36px;
+}
+.console-window {
+  width: min(1040px, 100%); height: calc(100vh - 80px); min-height: 360px;
+  display: flex; flex-direction: column;
+  border: 4px solid var(--ink); border-radius: 22px; overflow: hidden;
+  background: #000;
+  box-shadow: 0 8px 0 var(--ink), 0 0 0 3px rgba(255, 255, 255, .08), 0 20px 50px rgba(0, 0, 0, .6);
+}
+
+/* yellow top bar, like the game's buttons */
+.console-bar {
+  flex: none; display: flex; align-items: center; justify-content: space-between;
+  height: 56px; padding: 0 18px;
+  background: var(--sun);
+  border-bottom: 4px solid var(--ink);
+}
+.live-pill {
+  display: flex; align-items: center; gap: 7px;
+  padding: 3px 12px 3px 9px; border-radius: 999px;
+  background: var(--card); color: var(--ink);
+  border: 3px solid var(--ink); box-shadow: 0 3px 0 var(--ink);
+  font-weight: 700; font-size: 14px; line-height: 1.2;
+}
+.live-pill::before {
+  content: ""; width: 10px; height: 10px; border-radius: 50%;
+  background: #b9b3c9; border: 2px solid var(--ink);
+}
+.live-pill.on::before { background: #6fcf97; animation: livepulse 1.8s ease-out infinite; }
+@keyframes livepulse { 0% { box-shadow: 0 0 0 0 rgba(111, 207, 151, .7); } 70%, 100% { box-shadow: 0 0 0 6px rgba(111, 207, 151, 0); } }
+
+/* the three window buttons, game style: ink outline, bold shadow, they press down */
+.console-bar .buttons { display: flex; gap: 12px; }
+.console-bar .buttons button {
+  width: 22px; height: 22px; padding: 0; border-radius: 50%;
+  border: 3px solid var(--ink); box-shadow: 0 3px 0 var(--ink);
+  cursor: pointer; position: relative;
+  transition: transform .08s, box-shadow .08s;
+}
+.console-bar .buttons button::after {      /* a little shine, like the game's sprites */
+  content: ""; position: absolute; left: 3px; top: 2px; width: 6px; height: 5px;
+  border-radius: 50%; background: rgba(255, 255, 255, .6);
+}
+.console-bar .buttons button:hover { transform: translateY(-2px); box-shadow: 0 5px 0 var(--ink); }
+.console-bar .buttons button:active { transform: translateY(3px); box-shadow: 0 0 0 var(--ink); }
+.console-bar .buttons .red { background: var(--coral); }
+.console-bar .buttons .yellow { background: #fff1b8; }
+.console-bar .buttons .green { background: #6fcf97; }
+
+/* the screen: black, white monospace text */
+.console-screen-wrap { position: relative; flex: 1; min-height: 0; }
+.console-screen {
+  position: absolute; inset: 0; overflow-y: auto;
+  padding: 18px 22px 40px;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 14px; line-height: 1.65;
+  color: #fff;
+}
+.console-screen p { margin: 0 0 10px; }
+.console-screen .dim { color: #fff; opacity: .7; }
+.console-screen .err { color: #fff; font-weight: 700; }
+
+.run { margin-bottom: 16px; animation: fadein .3s ease-out; }
+@keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+.run .tag { font-weight: 700; margin-right: 10px; }
+.run .time { margin-right: 10px; opacity: .6; }
+.run .indent { padding-left: 2ch; }
+.run .lamp { margin-left: 1.5ch; }
+.run .lamp.on { font-weight: 700; }
+.run .verdict.yes { font-weight: 700; }
+
+.prompt { color: #fff; }
+.cursor {
+  display: inline-block; width: .6em; height: 1.1em; vertical-align: text-bottom;
+  background: #fff; animation: blink 1s steps(2) infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
+
+.console-owl {
+  position: absolute; right: 14px; bottom: 6px; width: 120px; height: 120px;
+  pointer-events: none;
+}
+@media (max-width: 640px) {
+  .console-page { padding: 14px; }
+  .console-window { height: calc(100vh - 28px); }
+  .console-screen { font-size: 12.5px; padding: 14px 14px 40px; }
+  .console-owl { width: 88px; height: 88px; }
+}

@@ -331,6 +331,19 @@ const sfx = {
 /* ================================================================
    Flow
    ================================================================ */
+/* Daytime: the park in sunlight, lamps off, waiting for Space to bring the night. */
+function toDay() {
+  score = 0; lives = 3; owlets = 0;
+  LAMPS.forEach(l => { l.on = false; l.changedAt = -9; });
+  sunset = 0;
+  resetOwl();
+  pickup = null;
+  verdict = null; trouble = null;
+  winCardShown = false; winStats = null;
+  state = "day"; phaseT = 0;
+  hideOverlays();
+}
+
 function newGame() {
   score = 0; lives = 3;
   newNight();
@@ -507,7 +520,7 @@ function update(dt) {
   }
 
   if (state === "crash" && phaseT > .7) { state = "stopped"; phaseT = 0; }
-  if (state === "restart" && phaseT > 2.4) newGame();   // out of lives: start again
+  if (state === "restart" && phaseT > 2.4) toDay();    // out of lives: back to daytime, Space to start again
 
   if (state === "win" && phaseT > 1.8 && !winCardShown) {
     winCardShown = true;
@@ -855,6 +868,10 @@ function render() {
     banner("Ready, Nox?", "Press an arrow key or swipe to fly", pulse);
   }
   if (state === "restart") banner("Out of lives!", "Starting again...");
+  if (state === "day") {
+    const pulse = .75 + Math.sin(t * 4) * .25;
+    banner("Press Space to make it night", "Then fly Nox to every lamp and switch it off", pulse);
+  }
   if (state === "stopped") banner("Nox is hovering", "Arrow key or Space to fly on · Space twice to pause");
   if (state === "win") drawSky(Math.min(1, phaseT / 1.4), t);
 
@@ -862,7 +879,7 @@ function render() {
 }
 
 function drawDarkness(t) {
-  const night = state === "title" ? .12 : (sunset ? .62 : .18);
+  const night = state === "title" ? .12 : state === "day" ? 0 : (sunset ? .62 : .18);
   dctx.globalCompositeOperation = "source-over";
   dctx.clearRect(0, 0, W, H);
   dctx.fillStyle = `rgba(14, 12, 52, ${night})`;
@@ -1025,20 +1042,22 @@ function emitIfChanged() {
 /* ================================================================
    Input
    ================================================================ */
-function replay() { newGame(); }
+function replay() { toDay(); }
 
 const KEYS = { ArrowUp: "up", KeyW: "up", ArrowDown: "down", KeyS: "down", ArrowLeft: "left", KeyA: "left", ArrowRight: "right", KeyD: "right" };
 on(window, "keydown", e => {
   if (KEYS[e.code]) { e.preventDefault(); steer(KEYS[e.code]); return; }
   if (e.code === "Space" || e.code === "KeyP" || e.code === "Escape") {
     e.preventDefault();
-    if (state === "title" && e.code === "Space") { sfx.hoot(); newGame(); return; }
+    if (state === "title" && e.code === "Space") { toDay(); return; }
+    if (state === "day" && e.code === "Space") { sfx.hoot(); newGame(); return; }
     if (state === "win" && (winCardShown || lookingUp) && e.code === "Space") { replay(); return; }
     if (e.code === "Space" && !e.repeat) { spacePress(); return; }
     if (e.code !== "Space") togglePause();
   }
   if (e.code === "Enter") {
-    if (state === "title") { sfx.hoot(); newGame(); }
+    if (state === "title") toDay();
+    else if (state === "day") { sfx.hoot(); newGame(); }
     else if (state === "win" && (winCardShown || lookingUp)) replay();
   }
 });
@@ -1047,6 +1066,7 @@ let swipe = null;
 on(canvas, "pointerdown", e => { swipe = { x: e.clientX, y: e.clientY }; });
 on(canvas, "pointerup", e => {
   if (!swipe) return;
+  if (state === "day") { swipe = null; sfx.hoot(); newGame(); return; }
   const dx = e.clientX - swipe.x, dy = e.clientY - swipe.y;
   swipe = null;
   if (Math.max(Math.abs(dx), Math.abs(dy)) < 24) return;
@@ -1098,7 +1118,7 @@ function frame(now) {
 rafId = requestAnimationFrame(frame);
 
 return {
-  start() { sfx.hoot(); newGame(); },
+  start() { toDay(); },              // close the instructions: daytime, waiting for Space
   replay,
   resume() { if (state === "paused") togglePause(); },
   lookUp() { hideOverlays(); lookingUp = true; },
