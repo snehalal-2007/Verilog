@@ -1,0 +1,116 @@
+/* Nox's Night Out. Cartoon night-time park; everything floats over the canvas. */
+:root {
+  --ink: #1b1530;
+  --card: #fff6e3;
+  --sun: #ffd23f;
+  --lamp: #ffe066;
+  --coral: #ff7a59;
+  --muted: #6b6385;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; }
+body {
+  font-family: Fredoka, ui-rounded, "Avenir Next", system-ui, sans-serif;
+  color: #fff;
+  background: #2c6e45;
+}
+/* The park fills the whole window; the stats float in the top-right corner */
+.stage { position: fixed; inset: 0; touch-action: none; }
+.stage > canvas.park { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+/* Floating, no panel: the light chips and life owls sit straight on the grass */
+.hud {
+  position: absolute; top: 14px; right: 14px; z-index: 2; max-width: calc(100vw - 28px);
+  display: flex; flex-direction: column; align-items: flex-end; gap: 10px;
+  pointer-events: none;
+}
+.hint {
+  position: absolute; left: 16px; bottom: 14px; z-index: 2;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px;
+  font-size: 13px; font-weight: 600; text-shadow: 0 1px 3px rgba(0, 0, 0, .7);
+}
+.hint kbd { font-size: 12px; min-width: 20px; margin-right: 2px; text-shadow: none; }
+.hint .pill { padding: 2px 10px; font-size: 13px; text-shadow: none; }
+.lives { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px; align-items: center; min-height: 28px; filter: drop-shadow(0 3px 0 rgba(27, 21, 48, .9)); }
+.lives svg { display: block; }
+.pill {
+  background: var(--card); color: var(--ink);
+  border: 3px solid var(--ink); border-radius: 999px;
+  padding: 3px 12px; font-weight: 600; font-size: 15px;
+  box-shadow: 0 3px 0 var(--ink);
+  display: flex; align-items: center; gap: 6px;
+}
+.pill.btnpill { cursor: pointer; font: inherit; font-weight: 600; font-size: 15px; justify-content: center; }
+
+.lamps { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.chip {
+  display: flex; align-items: center; gap: 8px;
+  background: #2a2550; border: 3px solid var(--ink); border-radius: 14px;
+  padding: 4px 10px; font-weight: 600; font-size: 14px;
+  box-shadow: 0 3px 0 var(--ink); transition: background .3s, color .3s;
+  min-width: 0;
+}
+.chip span.name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chip .bulb { flex: none; width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--ink); background: #4a4560; transition: all .3s; }
+.chip.on { background: #fff1b8; color: var(--ink); }
+.chip:not(.on) { background: rgba(42, 37, 80, .92); }
+.chip.on .bulb { background: var(--lamp); box-shadow: 0 0 12px 3px rgba(255, 224, 102, .85); }
+
+.overlay {
+  position: absolute; inset: 0; z-index: 5; display: flex; align-items: center; justify-content: center;
+  background: rgba(12, 10, 35, .45); padding: 16px;
+}
+.overlay.clear { background: transparent; align-items: flex-start; padding-top: 6%; }
+.card {
+  background: var(--card); color: var(--ink);
+  border: 4px solid var(--ink); border-radius: 22px; box-shadow: 0 8px 0 var(--ink);
+  padding: 18px 24px 20px; max-width: 440px; width: 100%; text-align: center;
+  animation: pop .35s cubic-bezier(.3, 1.6, .5, 1);
+}
+@keyframes pop { from { transform: scale(.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.card h2 { margin: 2px 0 6px; font-size: 30px; line-height: 1.1; }
+.card p { margin: 6px 0; font-size: 15px; line-height: 1.45; color: #3b3355; }
+.card canvas.mascot { width: 120px; height: 120px; display: block; margin: -4px auto 0; }
+.how { display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; text-align: left; margin: 10px 0 2px; font-size: 14px; color: #3b3355; align-items: center; }
+kbd {
+  display: inline-block; min-width: 24px; padding: 1px 6px; border: 2px solid var(--ink); border-bottom-width: 4px;
+  border-radius: 7px; background: #fff; font-family: inherit; font-weight: 600; font-size: 13px; text-align: center; color: var(--ink);
+}
+.btn {
+  font: inherit; font-weight: 700; font-size: 18px;
+  background: var(--sun); color: var(--ink);
+  border: 3px solid var(--ink); border-radius: 14px; padding: 10px 22px;
+  box-shadow: 0 4px 0 var(--ink); cursor: pointer; margin: 12px 4px 0;
+}
+.btn:hover { filter: brightness(1.05); }
+.btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+.btn.alt { background: #fff; }
+.tally { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0 2px; }
+.tally div { background: #fff; border: 3px solid var(--ink); border-radius: 12px; padding: 6px 4px; }
+.tally b { display: block; font-size: 22px; }
+.tally span { font-size: 12px; color: var(--muted); }
+.floating-replay { position: absolute; right: 18px; bottom: 18px; margin: 0; z-index: 4; }
+
+.help { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; align-items: center; }
+.help kbd { font-size: 12px; min-width: 20px; margin-right: 2px; }
+.help .pill { padding: 2px 10px; font-size: 13px; }
+
+.pad { position: absolute; z-index: 3; bottom: 16px; left: 50%; transform: translateX(-50%); display: none; grid-template-columns: repeat(3, 64px); grid-template-rows: repeat(2, 56px); gap: 8px; justify-content: center; }
+.pad button {
+  font: inherit; font-size: 22px; font-weight: 700; color: var(--ink); background: var(--card);
+  border: 3px solid var(--ink); border-radius: 14px; box-shadow: 0 4px 0 var(--ink); touch-action: manipulation;
+}
+.pad button:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+.pad .up { grid-column: 2; grid-row: 1; }
+.pad .left { grid-column: 1; grid-row: 2; }
+.pad .down { grid-column: 2; grid-row: 2; }
+.pad .right { grid-column: 3; grid-row: 2; }
+@media (pointer: coarse) { .pad { display: grid; } }
+@media (max-width: 640px) {
+  .card h2 { font-size: 24px; }
+}
+
+/* shown in the controls line when Flask / the simulator can't be reached */
+.hint .trouble {
+  flex-basis: 100%; color: #ffd1c2; font-weight: 600;
+}
+#root { height: 100%; }

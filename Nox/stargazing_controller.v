@@ -1,6 +1,6 @@
 //===========================================
 //
-// Luna - Stargazing Park
+// Nox - Stargazing Park
 // Author: Sneha
 // Fall 2026
 //

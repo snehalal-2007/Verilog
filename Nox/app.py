@@ -1,5 +1,5 @@
 """
-Luna — stargazing park.
+Nox — stargazing park.
 
 Python's job here is deliberately small: it carries the state of the
 park from the browser to the SystemVerilog simulation and carries the
@@ -7,7 +7,7 @@ answer back. It does not decide anything. The rule about when it is
 time to stargaze lives in stargazing_controller.v and nowhere else.
 """
 
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_from_directory
 from pathlib import Path
 import subprocess
 import os
@@ -18,6 +18,7 @@ app = Flask(__name__)
 ROOT       = Path(__file__).parent
 SIMULATION = ROOT / "simulation"
 SOURCES    = [ROOT / "stargazing_controller.v"]   # Breadboard + testbench in one file
+FRONTEND   = ROOT / "frontend" / "dist"           # the React game, built with `npm run build`
 
 # The five values the hardware takes, in the order it prints them back.
 INPUTS = ["sunset", "a", "b", "c", "d"]
@@ -66,6 +67,22 @@ def as_bit(value, name):
 
 @app.route("/")
 def home():
+    """The React game (Nox's Night Out)."""
+    if not (FRONTEND / "index.html").exists():
+        return ("The React UI has not been built yet. Run:<br>"
+                "<code>cd frontend &amp;&amp; npm install &amp;&amp; npm run build</code><br>"
+                'The original park is still at <a href="/classic">/classic</a>.'), 503
+    return send_from_directory(FRONTEND, "index.html")
+
+
+@app.route("/assets/<path:name>")
+def frontend_assets(name):
+    return send_from_directory(FRONTEND / "assets", name)
+
+
+@app.route("/classic")
+def classic():
+    """The original realistic 3D park."""
     return render_template("index.html")
 
 

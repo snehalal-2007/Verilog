@@ -1,6 +1,6 @@
-# Luna — What It's Built With
+# Nox — What It's Built With
 
-Luna is three layers stacked on top of each other. Each one has a single job, and the
+Nox is three layers stacked on top of each other. Each one has a single job, and the
 decision about when to stargaze is made in exactly one place: the hardware.
 
 ```

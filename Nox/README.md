@@ -1,4 +1,4 @@
-# Luna — Stargazing Park
+# Nox — Stargazing Park
 
 A small web app that asks a piece of simulated hardware one question: *is it time to stargaze?*
 
@@ -45,10 +45,33 @@ brew install icarus-verilog
 pip install flask
 ```
 
+## The game UI (React): Nox's Night Out
+
+The main page is a cartoon game built with React in `frontend/`. Nox the owl flies around the park switching the four lamps off. Every time a lamp changes, the game posts the park's state to `/simulate`. The night is won only when the Verilog answers `READY=1`. If the server can't be reached, the game says so and the night can't be won (it fails closed).
+
+Build it once (and again after changing anything in `frontend/`):
+
+```sh
+cd Nox/frontend
+npm install
+npm run build
+```
+
+Then run the server as below and open <http://localhost:5050>. The original realistic park is still at <http://localhost:5050/classic>.
+
+While working on the UI, `npm run dev` serves it with live reload on <http://localhost:5173> and forwards `/simulate` to Flask on port 5050, so keep `python3 app.py` running too.
+
+| Path | Purpose |
+|------|---------|
+| `frontend/src/game/engine.js` | The canvas game: park layout, Nox, owlets, lamps. Has no stargazing rule; it reports lamps and waits for the verdict |
+| `frontend/src/game/art.js` | Drawing helpers and the characters |
+| `frontend/src/api.js` | `POST /simulate`, ignoring answers that arrive after a newer request |
+| `frontend/src/App.jsx` and `components/` | Floating lights and lives, controls, title/pause/win cards |
+
 ## Run the web app
 
 ```sh
-cd Luna
+cd Nox
 python3 app.py
 ```
 
