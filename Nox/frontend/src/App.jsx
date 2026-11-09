@@ -4,7 +4,7 @@ import { askHardware } from "./api.js";
 import Hud from "./components/Hud.jsx";
 import Hint from "./components/Hint.jsx";
 import Pad from "./components/Pad.jsx";
-import { TitleCard, PauseCard, WinCard } from "./components/Cards.jsx";
+import { TitleCard, PauseCard } from "./components/Cards.jsx";
 
 const START_LAMPS = [
   { id: "a", name: "Fountain", on: false },
@@ -38,21 +38,22 @@ export default function App() {
   }, []);
 
   const game = () => gameRef.current;
+  // The stargazing view (after the Verilog says READY = 1) shows only the sky
+  // and a Play again button: no lights, lives or controls.
+  const stargazing = snap.state === "win";
+  const showReplay = stargazing && (snap.overlay === "win" || snap.lookingUp);
 
   return (
     <div className="stage">
       <canvas ref={canvasRef} className="park" aria-label="The playground at night" />
-      <Hud ref={hudRef} lamps={snap.lamps} lives={snap.lives} />
-      <Hint muted={snap.muted} trouble={snap.trouble} onToggleMute={() => game().setMuted(!snap.muted)} />
+      <Hud ref={hudRef} lamps={snap.lamps} lives={snap.lives} hidden={stargazing} />
+      {!stargazing && <Hint muted={snap.muted} trouble={snap.trouble} onToggleMute={() => game().setMuted(!snap.muted)} />}
 
       {snap.overlay === "title" && <TitleCard onStart={() => game().start()} />}
       {snap.overlay === "pause" && <PauseCard onResume={() => game().resume()} />}
-      {snap.overlay === "win" && <WinCard win={snap.win} onLookUp={() => game().lookUp()} onReplay={() => game().replay()} />}
-      {snap.state === "win" && snap.lookingUp && (
-        <button className="btn floating-replay" onClick={() => game().replay()}>Play again</button>
-      )}
+      {showReplay && <button className="btn floating-replay" onClick={() => game().replay()}>Play again</button>}
 
-      <Pad onSteer={(d) => game().steer(d)} />
+      {!stargazing && <Pad onSteer={(d) => game().steer(d)} />}
     </div>
   );
 }

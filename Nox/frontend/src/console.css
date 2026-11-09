@@ -1,19 +1,18 @@
-/* /verilog — a pixelated black/grey page with one window in the game's cartoon style:
+/* /verilog — a night-sky page with one window in the game's cartoon style:
    thick ink outline, solid drop shadow, yellow top bar, chunky buttons.
    Inside: a black screen with white text. */
 body.console-body {
   overflow: auto;
-  background-color: #161616;
-  background-size: 256px 256px;          /* each pixel of the tile shows as an 8 x 8 square */
-  background-repeat: repeat;
-  image-rendering: pixelated;
+  background: #090c2b;
   font-family: Fredoka, ui-rounded, "Avenir Next", system-ui, sans-serif;
 }
-body.console-body .console-window, body.console-body canvas { image-rendering: auto; }
+/* the animated night sky sits behind everything */
+.night-sky { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 0; display: block; }
 .console-page {
   min-height: 100vh; display: flex; align-items: center; justify-content: center;
   padding: 36px;
 }
+.console-window { position: relative; z-index: 1; }
 .console-window {
   width: min(1040px, 100%); height: calc(100vh - 80px); min-height: 360px;
   display: flex; flex-direction: column;

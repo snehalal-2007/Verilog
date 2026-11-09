@@ -20,8 +20,7 @@ export default function ConsolePage() {
   useEffect(() => {
     document.body.classList.add("console-body");
     document.title = "Verilog console";
-    document.body.style.backgroundImage = `url(${pixelTile()})`;
-    return () => { document.body.classList.remove("console-body"); document.body.style.backgroundImage = ""; };
+    return () => document.body.classList.remove("console-body");
   }, []);
 
   useEffect(() => {
@@ -61,6 +60,7 @@ export default function ConsolePage() {
 
   return (
     <div className="console-page">
+      <NightSky />
       <div className="console-window">
         <div className="console-bar">
           <span className={"live-pill" + (online ? " on" : "")}>{online ? "live" : "offline"}</span>
@@ -85,19 +85,61 @@ export default function ConsolePage() {
   );
 }
 
-/* A 32 x 32 tile of black and dark-grey pixels (fixed seed, so it is the
-   same every time). CSS scales it up with image-rendering: pixelated. */
-function pixelTile() {
-  const c = document.createElement("canvas");
-  c.width = c.height = 32;
-  const g = c.getContext("2d"), r = rng(5);
-  const greys = ["#111111", "#161616", "#1b1b1b", "#202020", "#262626", "#2d2d2d", "#353535", "#3e3e3e"];
-  for (let y = 0; y < 32; y++) for (let x = 0; x < 32; x++) {
-    const k = r();
-    g.fillStyle = greys[Math.floor(k * k * greys.length)];     // mostly dark, a few lighter pixels
-    g.fillRect(x, y, 1, 1);
-  }
-  return c.toDataURL();
+/* The page background: the same night sky as the game's stargazing ending —
+   galaxy band, twinkling stars, now and then a shooting star. */
+function NightSky() {
+  const ref = useRef(null);
+  useEffect(() => {
+    const cv = ref.current, g = cv.getContext("2d");
+    let W = 0, H = 0, stars = [], galaxy = [], id = 0;
+    const build = () => {
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      W = window.innerWidth; H = window.innerHeight;
+      cv.width = W * dpr; cv.height = H * dpr;
+      g.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const r = rng(42), n = Math.round(W * H / 4500);
+      stars = Array.from({ length: n }, () => ({ x: r() * W, y: r() * H, r: .4 + r() * 1.5, ph: r() * Math.PI * 2 }));
+      galaxy = Array.from({ length: n * 3 }, () => {
+        const t = r(), off = (r() + r() + r() - 1.5) * Math.min(W, H) * .12;
+        return { x: t * W + off * .45, y: H * .92 - t * H * .85 + off, r: .3 + r() * 1, c: ["#ffffff", "#d9ccff", "#bfe3ff", "#ffd9f2"][Math.floor(r() * 4)] };
+      });
+    };
+    const draw = (now) => {
+      const t = now / 1000;
+      const sky = g.createLinearGradient(0, 0, 0, H);
+      sky.addColorStop(0, "#090c2b"); sky.addColorStop(.6, "#1d1a52"); sky.addColorStop(1, "#3a2466");
+      g.fillStyle = sky; g.fillRect(0, 0, W, H);
+      g.globalCompositeOperation = "lighter";
+      for (let i = 0; i <= 14; i++) {
+        const k = i / 14, x = k * W, y = H * .92 - k * H * .85, rad = Math.min(W, H) * .22;
+        const glow = g.createRadialGradient(x, y, 0, x, y, rad);
+        glow.addColorStop(0, "rgba(150,120,255,.09)"); glow.addColorStop(1, "rgba(150,120,255,0)");
+        g.fillStyle = glow; circ(g, x, y, rad); g.fill();
+      }
+      for (const s of galaxy) { g.fillStyle = s.c; circ(g, s.x, s.y, s.r); g.fill(); }
+      g.globalCompositeOperation = "source-over";
+      for (const s of stars) {
+        g.globalAlpha = .35 + (Math.sin(t * 2 + s.ph) * .5 + .5) * .65;
+        g.fillStyle = "#fff"; circ(g, s.x, s.y, s.r); g.fill();
+      }
+      g.globalAlpha = 1;
+      // a shooting star every few seconds
+      const p = (t % 4.5) / 1;
+      if (p < 1) {
+        const sx = W * .8 - p * W * .3, sy = H * .06 + p * H * .22;
+        const tail = g.createLinearGradient(sx, sy, sx + 110, sy - 48);
+        tail.addColorStop(0, "rgba(255,255,255,.95)"); tail.addColorStop(1, "rgba(255,255,255,0)");
+        g.strokeStyle = tail; g.lineWidth = 3; g.lineCap = "round";
+        g.beginPath(); g.moveTo(sx, sy); g.lineTo(sx + 110, sy - 48); g.stroke();
+      }
+      id = requestAnimationFrame(draw);
+    };
+    build();
+    window.addEventListener("resize", build);
+    id = requestAnimationFrame(draw);
+    return () => { cancelAnimationFrame(id); window.removeEventListener("resize", build); };
+  }, []);
+  return <canvas className="night-sky" ref={ref} aria-hidden="true" />;
 }
 
 function Run({ run }) {

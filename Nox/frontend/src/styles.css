@@ -88,7 +88,13 @@ kbd {
 .tally div { background: #fff; border: 3px solid var(--ink); border-radius: 12px; padding: 6px 4px; }
 .tally b { display: block; font-size: 22px; }
 .tally span { font-size: 12px; color: var(--muted); }
-.floating-replay { position: absolute; right: 18px; bottom: 18px; margin: 0; z-index: 4; }
+.floating-replay {
+  position: absolute; left: 50%; top: 40px; transform: translateX(-50%); margin: 0; z-index: 4;   /* top centre: Nox sits at the bottom */
+  font-size: 20px; padding: 12px 30px; animation: rise .4s cubic-bezier(.3, 1.6, .5, 1);
+}
+.floating-replay:active { transform: translate(-50%, 3px); }
+@keyframes rise { from { opacity: 0; transform: translate(-50%, -16px); } to { opacity: 1; transform: translate(-50%, 0); } }
+.hud.is-hidden { visibility: hidden; }
 
 .help { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; align-items: center; }
 .help kbd { font-size: 12px; min-width: 20px; margin-right: 2px; }

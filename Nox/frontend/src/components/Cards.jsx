@@ -32,21 +32,3 @@ export function PauseCard({ onResume }) {
     </div>
   );
 }
-
-export function WinCard({ win, onLookUp, onReplay }) {
-  return (
-    <div className="overlay clear">
-      <div className="card">
-        <h2>It's time to stargaze!</h2>
-        <p>The sun is down and every lamp is dark.</p>
-        <div className="tally">
-          <div><b>{win?.owlets ?? 0}</b><span>owlets rescued</span></div>
-          <div><b>{win?.secs ?? 0}s</b><span>night time</span></div>
-          <div><b>+{win?.bonus ?? 0}</b><span>bonus</span></div>
-        </div>
-        <button className="btn alt" onClick={onLookUp}>Just look up</button>
-        <button className="btn" onClick={onReplay}>Play again</button>
-      </div>
-    </div>
-  );
-}
