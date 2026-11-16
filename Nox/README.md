@@ -1,16 +1,8 @@
 # Nox — Stargazing Park
 
-A small web app that asks a piece of simulated hardware one question: *is it time to stargaze?*
+A small web game that asks a piece of simulated hardware one question: *is it time to stargaze?*
 
-You walk through a park. It is laid out as a map in metres and drawn in perspective from wherever you are standing. You arrive at an iron gate; beyond it a short path leads to a junction with a stone fountain straight ahead. The path sweeps left to the playground and right along a woodland trail to a lake with a jetty. Behind the fountain is the stargazing deck, and a picnic clearing sits in the north-west corner. Four places have a lamp post: the fountain, the trail, the playground and the deck. Every time you flip the sun or a lamp, the park's state is handed to a Verilog module, simulated with Icarus Verilog, and the hardware's verdict is drawn back onto the scene.
-
-**Controls**
-
-- Click anywhere (or press Enter) to open the gate, then walk in with **W** or **↑**.
-- **W / S** or **↑ / ↓** walk forward and back. **← / →** turn. **A / D** sidestep. Drag the scene sideways to look around. On a touch screen, hold the pad in the corner.
-- The mini map shows the park from above with you on it. The strip at the top names what is ahead of you.
-- Click the sun to bring on the night. Click the moon to bring the day back.
-- At night, walk to a lamp post and click it to switch it off. When all four are dark, the galaxy comes out.
+Nox the owl wants to see the stars, but the park lamps are too bright. You fly Nox around the park at night and switch off the four lamps: fountain, trail, playground and stargazing area. Every time the sun or a lamp changes, the park's state is handed to a Verilog module, simulated with Icarus Verilog, and the hardware's verdict comes back to the game. The night is won only when the Verilog answers `READY=1`.
 
 The decision rule lives **only** in `stargazing_controller.v`:
 
@@ -18,38 +10,39 @@ The decision rule lives **only** in `stargazing_controller.v`:
 ready = sunset & ~a & ~b & ~c & ~d
 ```
 
-Python (`app.py`) just carries bits back and forth. It does not decide anything.
+Python (`app.py`) carries bits back and forth and the game draws the answer. Neither of them decides anything.
 
-For a full breakdown of every language, library and tool in the project, see [TECH_STACK.md](TECH_STACK.md).
+- [VERILOG.md](VERILOG.md) explains the Verilog itself: the module, the testbench, the truth table and how a lamp click becomes a simulation run.
+- [TECH_STACK.md](TECH_STACK.md) breaks down the languages and tools. Its interface section describes the classic park at `/classic`, not the React game.
 
-## What's in here
+## How the pieces connect
 
-| Path | Purpose |
-|------|---------|
-| `stargazing_controller.v` | The `Breadboard` module (the logic) and a `testbench` that drives it |
-| `app.py` | Flask server. Serves the page, runs the simulation, returns the result as JSON |
-| `simulation` | Compiled output from `iverilog`. Rebuilt automatically when the `.v` file changes |
-| `templates/` | The HTML scene: sky, hills, sprite templates for everything that stands up, and the interface overlays |
-| `static/` | CSS and JavaScript for the interactive park |
-| `TECH_STACK.md` | What each layer is built with and why |
+```
+React game (frontend/)          POST /simulate  {sunset, a, b, c, d}
+        │
+        ▼
+Flask (app.py)                  vvp simulation +SUNSET=1 +A=0 +B=0 +C=0 +D=0
+        │
+        ▼
+Verilog (stargazing_controller.v)   RESULT SUNSET=1 A=0 B=0 C=0 D=0 READY=1
+```
 
 ## Prerequisites
 
 - **Python 3** with Flask
 - **Icarus Verilog** (`iverilog` and `vvp` must be on your `PATH`)
+- **Node.js** with npm, to build the game
 
 On macOS with Homebrew:
 
 ```sh
-brew install icarus-verilog
+brew install icarus-verilog node
 pip install flask
 ```
 
-## The game UI (React): Nox's Night Out
+## Run it
 
-The main page is a cartoon game built with React in `frontend/`. Nox the owl flies around the park switching the four lamps off. Every time a lamp changes, the game posts the park's state to `/simulate`. The night is won only when the Verilog answers `READY=1`. If the server can't be reached, the game says so and the night can't be won (it fails closed).
-
-Build it once (and again after changing anything in `frontend/`):
+Build the game once, and again after changing anything in `frontend/`:
 
 ```sh
 cd Nox/frontend
@@ -57,79 +50,69 @@ npm install
 npm run build
 ```
 
-Then run the server as below and open <http://localhost:5050>. The original realistic park is still at <http://localhost:5050/classic>.
-
-To show the Verilog working while you play, open <http://localhost:5050/verilog> in a second tab or window. Every Verilog run appears there within half a second: the `vvp` command, which lamps were on, the simulator's `RESULT` line and the `READY` verdict. The same runs are printed in the terminal running `app.py`.
-
-While working on the UI, `npm run dev` serves it with live reload on <http://localhost:5173> and forwards `/simulate` to Flask on port 5050, so keep `python3 app.py` running too.
-
-| Path | Purpose |
-|------|---------|
-| `frontend/src/game/engine.js` | The canvas game: park layout, Nox, owlets, lamps. Has no stargazing rule; it reports lamps and waits for the verdict |
-| `frontend/src/game/art.js` | Drawing helpers and the characters |
-| `frontend/src/api.js` | `POST /simulate`, ignoring answers that arrive after a newer request |
-| `frontend/src/App.jsx` and `components/` | Floating lights and lives, controls, title/pause/win cards |
-
-## Run the web app
+Start the server:
 
 ```sh
 cd Nox
 python3 app.py
 ```
 
-Then open <http://localhost:5050> in a browser.
+Then open <http://localhost:5050>.
 
-The server runs on port 5050 rather than 5000 because macOS Control Center (AirPlay Receiver) occupies 5000. If 5050 is also busy on your machine, pick another:
+The server uses port 5050 because macOS Control Center (AirPlay Receiver) occupies 5000. If 5050 is busy too, pick another:
 
 ```sh
 PORT=5077 python3 app.py
 ```
 
-The page loads three typefaces from Google Fonts. Without internet it falls back to system fonts and everything still works.
+On the first request, or whenever `stargazing_controller.v` is newer than `simulation`, the server recompiles the Verilog before running it. You do not need to compile by hand.
 
-On the first request, or whenever `stargazing_controller.v` is newer than `simulation`, the server recompiles the Verilog before running it. You do not need to compile by hand to use the app.
+## Pages
 
-## Run the Verilog by itself
+| Address | What it is |
+|---------|------------|
+| `/` | The game, *Nox's Night Out* |
+| `/verilog` | Live console of every Verilog run. Open it in a second window while you play |
+| `/classic` | The original realistic park you walk through |
 
-You can exercise the hardware without the web app.
+The `/verilog` page shows each run within half a second: the `vvp` command, which lamps were on, the simulator's `RESULT` line and the `READY` verdict. The same runs are printed in the terminal running `app.py`.
 
-Compile:
+## Playing
 
-```sh
-iverilog -o simulation stargazing_controller.v
-```
+| Control | What it does |
+|---------|--------------|
+| **Space** | In the park, makes it night and starts the game. While flying, stops Nox to hover |
+| **↑ ↓ ← →** or **W A S D** | Steer Nox. On a touch screen, use the pad |
+| **Space** twice, **P** or **Esc** | Pause |
 
-Print the full 32-row truth table:
+- Fly into a lit lamp to switch it off.
+- Each lost owlet you pick up is an extra life. They follow Nox in a line.
+- A bump costs a life. You start with 3. Lose them all and the game starts over.
+- When all four lamps are dark and the Verilog says `READY=1`, the stars come out.
 
-```sh
-vvp simulation
-```
+If the game can't reach the server, it says so and the night can't be won. It fails closed.
 
-Ask about one specific state of the park. Each switch is `1` (lit) or `0` (dark). Any switch you leave out counts as `0`:
+## What's in here
 
-```sh
-vvp simulation +SUNSET=1 +A=0 +B=0 +C=0 +D=0
-```
+| Path | Purpose |
+|------|---------|
+| `stargazing_controller.v` | The `Breadboard` module (the logic) and a `testbench` that drives it |
+| `app.py` | Flask server. Serves the pages, runs the simulation, returns the result as JSON |
+| `simulation` | Compiled output from `iverilog`. Rebuilt automatically when the `.v` file changes |
+| `frontend/` | The React game, built with Vite into `frontend/dist` |
+| `frontend/src/game/engine.js` | The canvas game: park layout, Nox, owlets, lamps. Has no stargazing rule; it reports lamps and waits for the verdict |
+| `frontend/src/game/art.js` | Drawing helpers and the characters |
+| `frontend/src/api.js` | `POST /simulate`, ignoring answers that arrive after a newer request |
+| `frontend/src/App.jsx` and `components/` | Floating lights and lives, controls, title and pause cards |
+| `frontend/src/ConsolePage.jsx` | The `/verilog` console page |
+| `templates/` and `static/` | HTML, CSS and JavaScript for the classic park at `/classic` |
+| `prototypes/` | Early single-file draft of the owl game |
+| `VERILOG.md` | How the Verilog works |
+| `TECH_STACK.md` | What each layer is built with and why |
 
-Output:
+## Working on the game
 
-```
-RESULT SUNSET=1 A=0 B=0 C=0 D=0 READY=1
-```
-
-This single-line form is exactly what `app.py` calls and parses.
-
-## Inputs
-
-| Plusarg | Meaning |
-|---------|---------|
-| `SUNSET` | 1 after sunset, 0 during the day |
-| `A` | Fountain lamp |
-| `B` | Trail lamp |
-| `C` | Playground lamp |
-| `D` | Stargazing area lamp |
-
-`READY` is 1 only when the sun has set and all four lamps are dark.
+`npm run dev` in `frontend/` serves the game with live reload on <http://localhost:5173> and forwards `/simulate` to Flask on port 5050, so keep `python3 app.py` running too.
 
 ## API
 
@@ -139,4 +122,10 @@ This single-line form is exactly what `app.py` calls and parses.
 {"sunset": 1, "a": 0, "b": 0, "c": 0, "d": 0}
 ```
 
-Returns the echoed inputs, the `ready` verdict, and the raw `RESULT` line from the simulator. Values other than 0 or 1 are rejected with a 400.
+Returns the echoed inputs, the `ready` verdict and the raw `RESULT` line from the simulator. Values other than 0 or 1 are rejected with a 400. If the Verilog fails to compile or its output can't be read, the answer is a 500 with the tool's output.
+
+`GET /runs?after=<id>` returns the Verilog runs newer than that id. The `/verilog` page polls it.
+
+## The classic park
+
+The first version of Nox is kept at <http://localhost:5050/classic>. It is a park laid out as a map in metres and drawn in perspective from where you stand. Click (or press Enter) to open the gate, walk with **W / S** or **↑ / ↓**, turn with **← / →**, sidestep with **A / D**. Click the sun to bring on the night, then walk to each lamp post and click it to switch it off. It asks the same Verilog the same question.
