@@ -122,7 +122,7 @@ vvp simulation +SUNSET=1 +A=0 +B=0 +C=0 +D=0
 5. `app.py` picks that line out with a regular expression and returns it as JSON.
 6. The game shows the stars only if `ready` came back as 1. If the server or simulator can't be reached, it never does.
 
-So a full night is at least five simulator runs: one when the sun sets and one for each lamp. You can watch them arrive at <http://localhost:5050/verilog> or in the terminal running `app.py`.
+The same thing happens at the start of the night, when the lamps come on one by one after sunset. So a full night is eight simulator runs: four as the lamps switch on and four as Nox switches them off. You can watch them arrive at <http://localhost:5050/verilog> or in the terminal running `app.py`.
 
 ## Changing the rule
 

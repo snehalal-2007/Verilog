@@ -48,6 +48,7 @@ def build_if_stale():
     if not stale:
         return None
 
+    #runs the verilog in the terminal to checl if its time to stargaze.
     result = subprocess.run(
         ["iverilog", "-o", str(SIMULATION)] + [str(s) for s in SOURCES],
         capture_output=True, text=True

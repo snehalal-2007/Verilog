@@ -106,7 +106,6 @@ If the game can't reach the server, it says so and the night can't be won. It fa
 | `frontend/src/App.jsx` and `components/` | Floating lights and lives, controls, title and pause cards |
 | `frontend/src/ConsolePage.jsx` | The `/verilog` console page |
 | `templates/` and `static/` | HTML, CSS and JavaScript for the classic park at `/classic` |
-| `prototypes/` | Early single-file draft of the owl game |
 | `VERILOG.md` | How the Verilog works |
 | `TECH_STACK.md` | What each layer is built with and why |
 
